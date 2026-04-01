@@ -52,13 +52,28 @@
                 <div style="width: 40px;"></div>
             </div>
             <div class="workout-content">
-                <!-- Здесь будет контент тренировки -->
                 <div class="workout-placeholder">
                     <p>Тренировка на <span id="selected-date-display"></span></p>
                     <p style="margin-top: 20px; color: #888;">Функционал в разработке</p>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (BOTTOM BAR) -->
+    <div class="bottom-nav">
+        <button class="nav-btn" id="nav-training" data-page="workout">
+            <img src="assets/icon-training-button.png" alt="Тренировка" class="nav-icon">
+            <span class="nav-label">Тренировка</span>
+        </button>
+        <button class="nav-btn" id="nav-exercises" data-page="exercises">
+            <img src="assets/icon-exercises-button.png" alt="Упражнения" class="nav-icon">
+            <span class="nav-label">Упражнения</span>
+        </button>
+        <button class="nav-btn" id="nav-progress" data-page="progress">
+            <img src="assets/icon-progress-button.png" alt="Прогресс" class="nav-icon">
+            <span class="nav-label">Прогресс</span>
+        </button>
     </div>
 
     <script src="script.js"></script>
