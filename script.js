@@ -5,7 +5,7 @@ let monthsData = [];
 let isFirstLoad = true;
 let splashTimeout = null;
 let isAppLoaded = false;
-let calendarInitialized = false;
+let selectedDate = null;
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
@@ -14,13 +14,16 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Настройка заставки
     setupSplashScreen();
+    
+    // Настройка навигации
+    setupNavigation();
 });
 
 // ==================== ФУНКЦИИ ЗАСТАВКИ ====================
 
 function setupSplashScreen() {
     const splash = document.getElementById("splash-screen");
-    const app = document.getElementById("app-content");
+    const app = document.getElementById("page-calendar");
     
     if (!splash || !app) return;
     
@@ -47,13 +50,13 @@ function hideSplashScreen() {
     }
     
     const splash = document.getElementById("splash-screen");
-    const app = document.getElementById("app-content");
+    const pageCalendar = document.getElementById("page-calendar");
     
-    if (splash && app) {
+    if (splash && pageCalendar) {
         splash.style.opacity = "0";
         setTimeout(() => {
             splash.style.display = "none";
-            app.style.display = "block";
+            pageCalendar.style.display = "block";
             
             // После появления главного экрана прокручиваем к текущему месяцу
             setTimeout(() => {
@@ -62,6 +65,75 @@ function hideSplashScreen() {
             }, 100);
         }, 300);
     }
+}
+
+// ==================== ФУНКЦИИ НАВИГАЦИИ ====================
+
+function setupNavigation() {
+    // Кнопка назад на странице тренировки
+    const backBtn = document.getElementById('back-to-calendar-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            showPage('calendar');
+        });
+    }
+    
+    // Обработка кнопки "Назад" на телефоне (Android)
+    document.addEventListener('backbutton', (e) => {
+        const pageWorkout = document.getElementById('page-workout');
+        if (pageWorkout && pageWorkout.style.display === 'block') {
+            e.preventDefault();
+            showPage('calendar');
+        }
+    }, false);
+}
+
+// Показать указанную страницу
+function showPage(pageName) {
+    const pageCalendar = document.getElementById('page-calendar');
+    const pageWorkout = document.getElementById('page-workout');
+    
+    if (pageName === 'calendar') {
+        if (pageCalendar) pageCalendar.style.display = 'block';
+        if (pageWorkout) pageWorkout.style.display = 'none';
+    } else if (pageName === 'workout') {
+        if (pageCalendar) pageCalendar.style.display = 'none';
+        if (pageWorkout) pageWorkout.style.display = 'block';
+    }
+}
+
+// Переход на страницу тренировки для выбранной даты
+function openWorkoutPage(date) {
+    selectedDate = date;
+    
+    // Обновляем заголовок на странице тренировки
+    const dateTitle = document.getElementById('workout-date-title');
+    const selectedDateDisplay = document.getElementById('selected-date-display');
+    
+    if (dateTitle) {
+        dateTitle.textContent = formatDateForTitle(date);
+    }
+    
+    if (selectedDateDisplay) {
+        selectedDateDisplay.textContent = formatDateForDisplay(date);
+    }
+    
+    // Показываем страницу тренировки
+    showPage('workout');
+}
+
+// Форматирование даты для заголовка
+function formatDateForTitle(date) {
+    const dateObj = new Date(date);
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    return `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]}`;
+}
+
+// Форматирование даты для отображения
+function formatDateForDisplay(date) {
+    const dateObj = new Date(date);
+    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    return `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
 }
 
 // ==================== ФУНКЦИИ КАЛЕНДАРЯ ====================
@@ -103,12 +175,10 @@ function getWeeksInMonth(year, month) {
 function calculateWindowHeightForMonth(year, month) {
     const weeks = getWeeksInMonth(year, month);
     
-    // Базовые размеры
-    const weekdaysHeight = 45; // Высота строки с днями недели (в пикселях)
-    const dayCellHeight = 48; // Высота одной ячейки дня (в пикселях)
-    const padding = 16; // Дополнительные отступы
+    const weekdaysHeight = 45;
+    const dayCellHeight = 48;
+    const padding = 16;
     
-    // Вычисляем высоту
     const height = weekdaysHeight + (weeks * dayCellHeight) + padding;
     
     return height;
@@ -121,7 +191,6 @@ function adjustWindowHeight() {
     
     if (!scrollContainer || !calendarWindow) return;
     
-    // Определяем, какой месяц сейчас в центре видимости
     const scrollTop = scrollContainer.scrollTop;
     let centerMonth = null;
     
@@ -161,7 +230,6 @@ function generateYearMonths(year) {
         const calendarDiv = document.createElement('div');
         calendarDiv.className = 'calendar';
         
-        // Дни недели
         const weekdaysDiv = document.createElement('div');
         weekdaysDiv.className = 'calendar-weekdays';
         const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
@@ -171,11 +239,9 @@ function generateYearMonths(year) {
             weekdaysDiv.appendChild(dayDiv);
         });
         
-        // Сетка дней
         const daysDiv = document.createElement('div');
         daysDiv.className = 'calendar-days';
         
-        // Генерируем дни месяца
         generateMonthDays(year, month, daysDiv);
         
         calendarDiv.appendChild(weekdaysDiv);
@@ -191,16 +257,11 @@ function generateYearMonths(year) {
         });
     }
     
-    // Обновляем заголовок с текущим месяцем
     updateMonthHeader();
     
-    // Устанавливаем начальную высоту
     setTimeout(() => {
         adjustWindowHeight();
     }, 50);
-    
-    // Помечаем, что календарь инициализирован
-    calendarInitialized = true;
 }
 
 // Генерация дней для конкретного месяца
@@ -209,13 +270,11 @@ function generateMonthDays(year, month, container) {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
     
-    // Определяем день недели первого дня (0 = воскресенье, преобразуем в понедельник как 0)
     let startDay = firstDayOfMonth.getDay();
     startDay = startDay === 0 ? 6 : startDay - 1;
     
     container.innerHTML = '';
     
-    // Добавляем пустые ячейки для дней предыдущего месяца
     for (let i = 0; i < startDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day empty';
@@ -223,23 +282,24 @@ function generateMonthDays(year, month, container) {
         container.appendChild(emptyDay);
     }
     
-    // Добавляем дни текущего месяца
     for (let day = 1; day <= daysInMonth; day++) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
         dayElement.textContent = day;
         
-        // Проверяем, является ли этот день сегодняшним
+        const currentDate = new Date(year, month, day);
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        
         if (day === today.getDate() && 
             month === today.getMonth() && 
             year === today.getFullYear()) {
             dayElement.classList.add('today');
         }
         
-        // Добавляем временный обработчик (пока без функционала)
+        // Добавляем обработчик для перехода на страницу тренировки
         dayElement.addEventListener('click', (e) => {
             e.stopPropagation();
-            console.log(`Выбран день: ${day}.${month+1}.${year}`);
+            openWorkoutPage(dateStr);
         });
         
         container.appendChild(dayElement);
@@ -256,7 +316,6 @@ function updateMonthHeader() {
     
     const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     
-    // Определяем, какой месяц сейчас в центре видимости
     const scrollTop = scrollContainer.scrollTop;
     let currentMonth = null;
     let closestDistance = Infinity;
@@ -284,7 +343,6 @@ function updateMonthHeader() {
     
     if (currentMonth) {
         monthHeader.textContent = `${monthNames[currentMonth.month]} ${currentMonth.year}`;
-        // Обновляем высоту окна при смене месяца
         adjustWindowHeight();
     }
 }
@@ -300,12 +358,10 @@ function scrollToCurrentMonth() {
     
     const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
     if (monthElement) {
-        // Получаем позицию элемента
         const monthElementTop = monthElement.offsetTop;
         const scrollContainerHeight = scrollContainer.clientHeight;
         const monthElementHeight = monthElement.offsetHeight;
         
-        // Вычисляем позицию прокрутки, чтобы месяц оказался в центре
         const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
         
         scrollContainer.scrollTo({
@@ -319,7 +375,7 @@ function scrollToCurrentMonth() {
     }
 }
 
-// Добавляем обработчик скролла для обновления заголовка и высоты
+// Добавляем обработчик скролла
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const scrollContainer = document.getElementById('calendar-scroll');
@@ -330,45 +386,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 200);
 });
-
-// Функция для будущего добавления новых годов
-function addYear(year) {
-    const monthsContainer = document.getElementById('calendar-months');
-    if (!monthsContainer) return;
-    
-    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    
-    for (let month = 0; month < 12; month++) {
-        const monthContainer = document.createElement('div');
-        monthContainer.className = 'month-container';
-        monthContainer.id = `month-${year}-${month}`;
-        
-        const calendarDiv = document.createElement('div');
-        calendarDiv.className = 'calendar';
-        
-        const weekdaysDiv = document.createElement('div');
-        weekdaysDiv.className = 'calendar-weekdays';
-        const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-        weekdays.forEach(day => {
-            const dayDiv = document.createElement('div');
-            dayDiv.textContent = day;
-            weekdaysDiv.appendChild(dayDiv);
-        });
-        
-        const daysDiv = document.createElement('div');
-        daysDiv.className = 'calendar-days';
-        generateMonthDays(year, month, daysDiv);
-        
-        calendarDiv.appendChild(weekdaysDiv);
-        calendarDiv.appendChild(daysDiv);
-        monthContainer.appendChild(calendarDiv);
-        monthsContainer.appendChild(monthContainer);
-        
-        monthsData.push({
-            year: year,
-            month: month,
-            element: monthContainer,
-            weeksCount: getWeeksInMonth(year, month)
-        });
-    }
-}
