@@ -1,4 +1,4 @@
-* {
+* * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -15,7 +15,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Задний фон главного экрана (темная иконка) */
+/* Задний фон главного экрана - без прозрачности, без наложения */
 body::before {
     content: '';
     position: fixed;
@@ -28,18 +28,12 @@ body::before {
     background-position: center;
     background-repeat: no-repeat;
     opacity: 1;
-    z-index: -2;
+    z-index: -1;
 }
 
+/* Убираем темное наложение поверх фона */
 body::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: -1;
+    content: none;
 }
 
 /* ЭКРАН ЗАСТАВКИ - полноэкранная картинка */
@@ -74,5 +68,4 @@ body::after {
     min-height: 100vh;
 }
 
-/* Главный экран - только фон, никаких элементов */
-/* Весь интерфейс будет добавлен позже */
+/* Главный экран - фон без прозрачности */
