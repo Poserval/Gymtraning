@@ -1,3 +1,8 @@
+// ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+let currentYear = 2026;
+let currentMonthIndex = 3; // Апрель (0-январь, 3-апрель)
+let monthsData = [];
+
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
     // Заставка висит 5 секунд, затем плавно исчезает
@@ -14,44 +19,107 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, 5000);
     
-    // Генерация календаря
-    renderCalendar();
+    // Инициализация календаря
+    initCalendar();
 });
 
-// Функция для генерации календаря
-function renderCalendar() {
+// ==================== ФУНКЦИИ КАЛЕНДАРЯ ====================
+
+// Инициализация календаря
+function initCalendar() {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const currentDate = today.getDate();
+    currentYear = today.getFullYear();
+    currentMonthIndex = today.getMonth();
     
-    // Обновляем заголовок с месяцем и годом
-    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    const monthHeader = document.getElementById('current-month');
-    if (monthHeader) {
-        monthHeader.textContent = `${monthNames[month]} ${year}`;
+    // Генерируем все месяцы текущего года
+    generateYearMonths(currentYear);
+    
+    // Добавляем обработчик для кнопки сброса
+    const resetBtn = document.getElementById('reset-calendar-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', scrollToCurrentMonth);
     }
     
-    // Получаем первый день месяца и количество дней
+    // Прокручиваем к текущему месяцу
+    setTimeout(() => {
+        scrollToCurrentMonth();
+    }, 100);
+}
+
+// Генерация всех месяцев указанного года
+function generateYearMonths(year) {
+    const monthsContainer = document.getElementById('calendar-months');
+    if (!monthsContainer) return;
+    
+    monthsContainer.innerHTML = '';
+    monthsData = [];
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    for (let month = 0; month < 12; month++) {
+        const monthContainer = document.createElement('div');
+        monthContainer.className = 'month-container';
+        monthContainer.id = `month-${year}-${month}`;
+        
+        const monthTitle = document.createElement('div');
+        monthTitle.className = 'month-title';
+        monthTitle.textContent = `${monthNames[month]} ${year}`;
+        
+        const calendarDiv = document.createElement('div');
+        calendarDiv.className = 'calendar';
+        
+        // Дни недели
+        const weekdaysDiv = document.createElement('div');
+        weekdaysDiv.className = 'calendar-weekdays';
+        const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+        weekdays.forEach(day => {
+            const dayDiv = document.createElement('div');
+            dayDiv.textContent = day;
+            weekdaysDiv.appendChild(dayDiv);
+        });
+        
+        // Сетка дней
+        const daysDiv = document.createElement('div');
+        daysDiv.className = 'calendar-days';
+        
+        // Генерируем дни месяца
+        generateMonthDays(year, month, daysDiv);
+        
+        calendarDiv.appendChild(weekdaysDiv);
+        calendarDiv.appendChild(daysDiv);
+        monthContainer.appendChild(monthTitle);
+        monthContainer.appendChild(calendarDiv);
+        monthsContainer.appendChild(monthContainer);
+        
+        monthsData.push({
+            year: year,
+            month: month,
+            element: monthContainer
+        });
+    }
+    
+    // Обновляем заголовок с текущим месяцем
+    updateMonthHeader();
+}
+
+// Генерация дней для конкретного месяца
+function generateMonthDays(year, month, container) {
     const firstDayOfMonth = new Date(year, month, 1);
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
     
     // Определяем день недели первого дня (0 = воскресенье, преобразуем в понедельник как 0)
     let startDay = firstDayOfMonth.getDay();
     startDay = startDay === 0 ? 6 : startDay - 1;
     
-    // Создаем сетку дней
-    const calendarDays = document.getElementById('calendar-days');
-    if (!calendarDays) return;
-    
-    calendarDays.innerHTML = '';
+    container.innerHTML = '';
     
     // Добавляем пустые ячейки для дней предыдущего месяца
     for (let i = 0; i < startDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day empty';
         emptyDay.textContent = '';
-        calendarDays.appendChild(emptyDay);
+        container.appendChild(emptyDay);
     }
     
     // Добавляем дни текущего месяца
@@ -61,12 +129,127 @@ function renderCalendar() {
         dayElement.textContent = day;
         
         // Проверяем, является ли этот день сегодняшним
-        if (day === currentDate && 
-            today.getMonth() === month && 
-            today.getFullYear() === year) {
+        if (day === today.getDate() && 
+            month === today.getMonth() && 
+            year === today.getFullYear()) {
             dayElement.classList.add('today');
         }
         
-        calendarDays.appendChild(dayElement);
+        // Добавляем временный обработчик (пока без функционала)
+        dayElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log(`Выбран день: ${day}.${month+1}.${year}`);
+        });
+        
+        container.appendChild(dayElement);
+    }
+}
+
+// Обновление заголовка с текущим месяцем при скролле
+function updateMonthHeader() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const monthHeader = document.getElementById('current-month');
+    if (!monthHeader) return;
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    // Определяем, какой месяц сейчас в центре видимости
+    const scrollTop = scrollContainer.scrollTop;
+    let currentMonth = null;
+    
+    for (let i = 0; i < monthsData.length; i++) {
+        const monthElement = monthsData[i].element;
+        const offsetTop = monthElement.offsetTop;
+        const offsetBottom = offsetTop + monthElement.offsetHeight;
+        
+        if (scrollTop + scrollContainer.clientHeight / 2 >= offsetTop && 
+            scrollTop + scrollContainer.clientHeight / 2 <= offsetBottom) {
+            currentMonth = monthsData[i];
+            break;
+        }
+    }
+    
+    if (currentMonth) {
+        monthHeader.textContent = `${monthNames[currentMonth.month]} ${currentMonth.year}`;
+    }
+}
+
+// Прокрутка к текущему месяцу
+function scrollToCurrentMonth() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
+    if (monthElement) {
+        monthElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+            updateMonthHeader();
+        }, 500);
+    }
+}
+
+// Добавляем обработчик скролла для обновления заголовка
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const scrollContainer = document.getElementById('calendar-scroll');
+        if (scrollContainer) {
+            scrollContainer.addEventListener('scroll', () => {
+                updateMonthHeader();
+            });
+        }
+    }, 200);
+});
+
+// Функция для будущего добавления новых годов (для расширения календаря)
+function addYear(year) {
+    // Эта функция будет использоваться в будущем для добавления годов
+    // когда появятся тренировки в новых годах
+    const monthsContainer = document.getElementById('calendar-months');
+    if (!monthsContainer) return;
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    for (let month = 0; month < 12; month++) {
+        const monthContainer = document.createElement('div');
+        monthContainer.className = 'month-container';
+        monthContainer.id = `month-${year}-${month}`;
+        
+        const monthTitle = document.createElement('div');
+        monthTitle.className = 'month-title';
+        monthTitle.textContent = `${monthNames[month]} ${year}`;
+        
+        const calendarDiv = document.createElement('div');
+        calendarDiv.className = 'calendar';
+        
+        const weekdaysDiv = document.createElement('div');
+        weekdaysDiv.className = 'calendar-weekdays';
+        const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+        weekdays.forEach(day => {
+            const dayDiv = document.createElement('div');
+            dayDiv.textContent = day;
+            weekdaysDiv.appendChild(dayDiv);
+        });
+        
+        const daysDiv = document.createElement('div');
+        daysDiv.className = 'calendar-days';
+        generateMonthDays(year, month, daysDiv);
+        
+        calendarDiv.appendChild(weekdaysDiv);
+        calendarDiv.appendChild(daysDiv);
+        monthContainer.appendChild(monthTitle);
+        monthContainer.appendChild(calendarDiv);
+        monthsContainer.appendChild(monthContainer);
+        
+        monthsData.push({
+            year: year,
+            month: month,
+            element: monthContainer
+        });
     }
 }
