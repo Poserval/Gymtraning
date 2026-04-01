@@ -63,8 +63,8 @@ body::before {
     justify-content: center;
 }
 
-/* Контейнер календаря */
-.calendar-container {
+/* Обертка календаря */
+.calendar-wrapper {
     width: 100%;
     position: absolute;
     top: 50%;
@@ -77,7 +77,7 @@ body::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     padding: 0 8px;
     position: relative;
 }
@@ -111,28 +111,38 @@ body::before {
     transform: scale(0.95);
 }
 
+/* Окно календаря - фиксированный размер 1:1 */
+.calendar-window {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: transparent;
+    overflow: hidden;
+    position: relative;
+}
+
 /* Контейнер для скролла */
 .calendar-scroll-container {
     width: 100%;
-    height: 70vh;
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     scroll-behavior: smooth;
+    padding-right: 4px;
 }
 
-/* Скрываем скроллбар для Chrome/Safari */
+/* Скрываем скроллбар для Chrome/Safari, но оставляем функционал */
 .calendar-scroll-container::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
 }
 
 .calendar-scroll-container::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 .calendar-scroll-container::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 .calendar-scroll-container::-webkit-scrollbar-thumb:hover {
@@ -142,20 +152,25 @@ body::before {
 /* Контейнер для всех месяцев */
 .calendar-months {
     width: 100%;
+    padding-bottom: 8px;
 }
 
 /* Отдельный месяц */
 .month-container {
-    margin-bottom: 40px;
+    margin-bottom: 24px;
     width: 100%;
 }
 
+.month-container:last-child {
+    margin-bottom: 0;
+}
+
 .month-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.7);
     margin-bottom: 12px;
-    padding-left: 8px;
+    padding-left: 4px;
     letter-spacing: 0.5px;
 }
 
@@ -174,10 +189,10 @@ body::before {
 }
 
 .calendar-weekdays div {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
-    padding: 8px 0;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 6px 0;
     letter-spacing: 0.5px;
 }
 
@@ -195,7 +210,7 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 400;
     color: #ffffff;
     position: relative;
@@ -212,7 +227,7 @@ body::before {
     right: 0;
     width: 100%;
     height: 1px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .calendar-day::before {
@@ -222,7 +237,7 @@ body::before {
     left: 0;
     width: 1px;
     height: 100%;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Убираем двойные линии на краях */
@@ -246,8 +261,8 @@ body::before {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border: 2px solid #ffffff;
     border-radius: 50%;
     background: transparent;
@@ -263,12 +278,12 @@ body::before {
 /* Адаптация для разных экранов */
 @media (max-width: 480px) {
     .calendar-day {
-        font-size: 13px;
+        font-size: 12px;
     }
     
     .calendar-day.today::before {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
     }
     
     .calendar-header h2 {
@@ -276,10 +291,11 @@ body::before {
     }
     
     .calendar-weekdays div {
-        font-size: 11px;
+        font-size: 10px;
     }
     
     .month-title {
-        font-size: 16px;
+        font-size: 14px;
+        margin-bottom: 8px;
     }
 }
