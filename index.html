@@ -17,9 +17,8 @@
         <img id="splash-image" src="assets/icon-main.png" alt="Gym Training">
     </div>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ -->
-    <div id="app-content" style="display: none;">
-        <!-- Календарь -->
+    <!-- СТРАНИЦА 1: КАЛЕНДАРЬ -->
+    <div id="page-calendar" class="page" style="display: none;">
         <div class="calendar-wrapper">
             <div class="calendar-header">
                 <h2 id="current-month">Апрель 2026</h2>
@@ -35,6 +34,28 @@
                     <div class="calendar-months" id="calendar-months">
                         <!-- Месяцы будут добавлены через JavaScript -->
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА 2: ТРЕНИРОВКА -->
+    <div id="page-workout" class="page" style="display: none;">
+        <div class="workout-container">
+            <div class="workout-header">
+                <button id="back-to-calendar-btn" class="back-btn" title="Назад">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
+                    </svg>
+                </button>
+                <h2 id="workout-date-title">Тренировка</h2>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="workout-content">
+                <!-- Здесь будет контент тренировки -->
+                <div class="workout-placeholder">
+                    <p>Тренировка на <span id="selected-date-display"></span></p>
+                    <p style="margin-top: 20px; color: #888;">Функционал в разработке</p>
                 </div>
             </div>
         </div>
