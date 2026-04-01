@@ -1,4 +1,4 @@
-* * {
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -15,7 +15,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Задний фон главного экрана - без прозрачности, без наложения */
+/* Задний фон главного экрана - без прозрачности */
 body::before {
     content: '';
     position: fixed;
@@ -29,11 +29,6 @@ body::before {
     background-repeat: no-repeat;
     opacity: 1;
     z-index: -1;
-}
-
-/* Убираем темное наложение поверх фона */
-body::after {
-    content: none;
 }
 
 /* ЭКРАН ЗАСТАВКИ - полноэкранная картинка */
@@ -60,12 +55,153 @@ body::after {
 
 /* Основное приложение */
 #app-content {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px 16px 100px 16px;
     position: relative;
     z-index: 1;
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Главный экран - фон без прозрачности */
+/* Контейнер календаря */
+.calendar-container {
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0 8px;
+}
+
+/* Заголовок календаря (месяц и год) */
+.calendar-header {
+    position: absolute;
+    top: -50px;
+    left: 0;
+    padding-left: 8px;
+}
+
+.calendar-header h2 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Календарь */
+.calendar {
+    width: 100%;
+    background: transparent;
+}
+
+/* Дни недели */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.calendar-weekdays div {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    padding: 10px 0;
+    letter-spacing: 0.5px;
+}
+
+/* Сетка дней */
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    text-align: center;
+}
+
+/* Ячейка дня */
+.calendar-day {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 400;
+    color: #ffffff;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Линии между ячейками */
+.calendar-day::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.calendar-day::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Убираем двойные линии на краях */
+.calendar-day:first-child::before {
+    display: none;
+}
+
+.calendar-days .calendar-day:nth-child(-n+7)::after {
+    display: none;
+}
+
+/* Текущая дата - обведена рамкой */
+.calendar-day.today {
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.calendar-day.today::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: transparent;
+    z-index: -1;
+}
+
+/* Пустые ячейки */
+.calendar-day.empty {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* Адаптация для разных экранов */
+@media (max-width: 480px) {
+    .calendar-day {
+        font-size: 14px;
+    }
+    
+    .calendar-day.today::before {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .calendar-header h2 {
+        font-size: 20px;
+        top: -45px;
+    }
+}
