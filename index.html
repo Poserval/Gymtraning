@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#121212">
+    <title>Gym Training</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gym Training">
+</head>
+<body>
+    <!-- ЭКРАН ЗАСТАВКИ (SPLASH) -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <img id="splash-icon" src="assets/icon-main.png" alt="Gym Training">
+            <div class="loader"></div>
+            <p class="splash-text">Gym Training</p>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ (изначально скрыт) -->
+    <div id="app-content" style="display: none;">
+        <!-- Верхняя панель -->
+        <div class="status-bar"></div>
+        <header>
+            <h1>GYM <span>TRAINING</span></h1>
+            <button id="reset-all-btn" class="reset-btn" title="Сбросить все данные">⟳</button>
+        </header>
+
+        <!-- Навигация по вкладкам -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="workout">🏋️ Тренировка</button>
+            <button class="tab-btn" data-tab="schedule">📅 Календарь</button>
+            <button class="tab-btn" data-tab="library">📚 Библиотека</button>
+            <button class="tab-btn" data-tab="programs">📈 Программы</button>
+        </div>
+
+        <!-- ВКЛАДКА: Тренировка -->
+        <div id="workout-tab" class="tab-content active">
+            <div class="workout-header">
+                <div class="workout-date">
+                    <span>📅</span>
+                    <input type="date" id="workout-date" class="date-input">
+                </div>
+                <div class="rest-timer">
+                    <span>⏱️ Отдых:</span>
+                    <input type="number" id="rest-minutes" min="0" max="10" value="1" step="1"> мин
+                    <input type="number" id="rest-seconds" min="0" max="59" value="30" step="1"> сек
+                    <button id="start-rest-btn" class="small-btn">▶️ Старт</button>
+                    <span id="timer-display" class="timer">01:30</span>
+                </div>
+            </div>
+
+            <div class="exercises-list" id="exercises-list">
+                <!-- Динамически добавляемые упражнения -->
+            </div>
+
+            <button id="add-exercise-btn" class="add-btn">+ Добавить упражнение</button>
+            <button id="save-workout-btn" class="save-btn">💾 Сохранить тренировку</button>
+        </div>
+
+        <!-- ВКЛАДКА: Календарь -->
+        <div id="schedule-tab" class="tab-content">
+            <h3>История тренировок</h3>
+            <div id="calendar-view" class="calendar-grid"></div>
+            <div id="selected-day-workout" class="selected-workout"></div>
+        </div>
+
+        <!-- ВКЛАДКА: Библиотека упражнений -->
+        <div id="library-tab" class="tab-content">
+            <div class="library-header">
+                <h3>Библиотека упражнений</h3>
+                <button id="add-library-exercise-btn" class="small-btn">+ Добавить</button>
+            </div>
+            <input type="text" id="library-search" placeholder="🔍 Поиск упражнений..." class="search-input">
+            <div id="library-list" class="library-grid"></div>
+        </div>
+
+        <!-- ВКЛАДКА: Программы / Рекомендации -->
+        <div id="programs-tab" class="tab-content">
+            <h3>📈 Прогрессия весов (Линейная)</h3>
+            <p class="info-text">Выберите упражнение для автоматического увеличения веса</p>
+            <select id="progress-exercise-select" class="progress-select"></select>
+            <div id="progress-recommendation" class="recommendation-card"></div>
+            <button id="apply-progress-btn" class="apply-progress-btn">Применить рекомендацию</button>
+            
+            <h3>✍️ Мои заметки и рекомендации</h3>
+            <textarea id="author-notes" rows="4" placeholder="Введите ваши рекомендации или заметки по тренировкам..."></textarea>
+            <button id="save-notes-btn" class="save-btn">Сохранить заметки</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно для редактирования упражнения -->
+    <div id="exercise-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Упражнение</h3>
+            <input type="text" id="modal-exercise-name" placeholder="Название упражнения" list="exercise-suggestions">
+            <datalist id="exercise-suggestions"></datalist>
+            <input type="number" id="modal-sets" placeholder="Количество подходов" min="1" value="3">
+            <input type="number" id="modal-reps" placeholder="Количество повторений" min="1" value="10">
+            <input type="number" id="modal-weight" placeholder="Вес (кг)" step="0.5" value="0">
+            <button id="modal-save-btn">Сохранить</button>
+            <button id="modal-delete-btn" class="delete-modal-btn">Удалить</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
