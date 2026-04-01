@@ -20,7 +20,7 @@
     <!-- ОСНОВНОЙ КОНТЕНТ -->
     <div id="app-content" style="display: none;">
         <!-- Календарь -->
-        <div class="calendar-container">
+        <div class="calendar-wrapper">
             <div class="calendar-header">
                 <h2 id="current-month">Апрель 2026</h2>
                 <button id="reset-calendar-btn" class="reset-calendar-btn" title="Вернуться к текущему месяцу">
@@ -30,9 +30,11 @@
                     </svg>
                 </button>
             </div>
-            <div class="calendar-scroll-container" id="calendar-scroll">
-                <div class="calendar-months" id="calendar-months">
-                    <!-- Месяцы будут добавлены через JavaScript -->
+            <div class="calendar-window">
+                <div class="calendar-scroll-container" id="calendar-scroll">
+                    <div class="calendar-months" id="calendar-months">
+                        <!-- Месяцы будут добавлены через JavaScript -->
+                    </div>
                 </div>
             </div>
         </div>
