@@ -28,6 +28,17 @@ body::before {
     background-position: center;
     background-repeat: no-repeat;
     opacity: 1;
+    z-index: -2;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
     z-index: -1;
 }
 
@@ -55,14 +66,20 @@ body::before {
     pointer-events: none;
 }
 
-/* Основное приложение */
-#app-content {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Общие стили для страниц */
+.page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Стили для страницы календаря */
+#page-calendar {
+    background: transparent;
 }
 
 /* Обертка календаря */
@@ -104,10 +121,6 @@ body::before {
     justify-content: center;
     transition: transform 0.2s ease;
     border-radius: 50%;
-}
-
-.reset-calendar-btn:hover {
-    transform: scale(1.1);
 }
 
 .reset-calendar-btn:active {
@@ -280,6 +293,73 @@ body::before {
     cursor: default;
 }
 
+/* ========== СТРАНИЦА ТРЕНИРОВКИ ========== */
+.workout-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px;
+}
+
+.workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.back-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    border-radius: 50%;
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+.workout-header h2 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.workout-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.workout-placeholder {
+    text-align: center;
+    padding: 40px;
+    background: rgba(30, 30, 30, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.workout-placeholder p {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.workout-placeholder p:first-child {
+    font-size: 20px;
+    font-weight: 600;
+    color: #ff9800;
+}
+
 /* Адаптация для разных экранов */
 @media (max-width: 480px) {
     .calendar-day {
@@ -297,5 +377,17 @@ body::before {
     
     .calendar-weekdays div {
         font-size: 11px;
+    }
+    
+    .workout-header h2 {
+        font-size: 18px;
+    }
+    
+    .workout-placeholder p {
+        font-size: 16px;
+    }
+    
+    .workout-placeholder p:first-child {
+        font-size: 18px;
     }
 }
