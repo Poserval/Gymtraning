@@ -3,26 +3,66 @@ let currentYear = 2026;
 let currentMonthIndex = 3;
 let monthsData = [];
 let isFirstLoad = true;
+let splashTimeout = null;
+let isAppLoaded = false;
+let calendarInitialized = false;
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
-    // Заставка висит 5 секунд, затем плавно исчезает
-    setTimeout(() => {
-        const splash = document.getElementById("splash-screen");
-        const app = document.getElementById("app-content");
-        
-        if (splash && app) {
-            splash.style.opacity = "0";
-            setTimeout(() => {
-                splash.style.display = "none";
-                app.style.display = "block";
-            }, 500);
-        }
-    }, 5000);
-    
     // Инициализация календаря
     initCalendar();
+    
+    // Настройка заставки
+    setupSplashScreen();
 });
+
+// ==================== ФУНКЦИИ ЗАСТАВКИ ====================
+
+function setupSplashScreen() {
+    const splash = document.getElementById("splash-screen");
+    const app = document.getElementById("app-content");
+    
+    if (!splash || !app) return;
+    
+    // Автоматический переход через 5 секунд
+    splashTimeout = setTimeout(() => {
+        hideSplashScreen();
+    }, 5000);
+    
+    // Переход по клику на заставку
+    splash.addEventListener('click', () => {
+        hideSplashScreen();
+    });
+}
+
+function hideSplashScreen() {
+    // Если приложение уже загружено, не выполняем повторно
+    if (isAppLoaded) return;
+    isAppLoaded = true;
+    
+    // Очищаем таймер, если он еще не сработал
+    if (splashTimeout) {
+        clearTimeout(splashTimeout);
+        splashTimeout = null;
+    }
+    
+    const splash = document.getElementById("splash-screen");
+    const app = document.getElementById("app-content");
+    
+    if (splash && app) {
+        splash.style.opacity = "0";
+        setTimeout(() => {
+            splash.style.display = "none";
+            app.style.display = "block";
+            
+            // После появления главного экрана прокручиваем к текущему месяцу
+            setTimeout(() => {
+                scrollToCurrentMonth();
+                isFirstLoad = false;
+            }, 100);
+        }, 300);
+    }
+}
 
 // ==================== ФУНКЦИИ КАЛЕНДАРЯ ====================
 
@@ -42,12 +82,6 @@ function initCalendar() {
             scrollToCurrentMonth();
         });
     }
-    
-    // По умолчанию всегда показываем текущий месяц в центре
-    setTimeout(() => {
-        scrollToCurrentMonth();
-        isFirstLoad = false;
-    }, 100);
 }
 
 // Получение количества недель в месяце
@@ -164,6 +198,9 @@ function generateYearMonths(year) {
     setTimeout(() => {
         adjustWindowHeight();
     }, 50);
+    
+    // Помечаем, что календарь инициализирован
+    calendarInitialized = true;
 }
 
 // Генерация дней для конкретного месяца
@@ -263,20 +300,22 @@ function scrollToCurrentMonth() {
     
     const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
     if (monthElement) {
-        // Прокручиваем так, чтобы месяц оказался в центре окна
-        const scrollContainerRect = scrollContainer.getBoundingClientRect();
-        const monthElementRect = monthElement.getBoundingClientRect();
-        const offset = monthElementRect.top - scrollContainerRect.top;
-        const scrollTo = scrollContainer.scrollTop + offset - (scrollContainerRect.height / 2) + (monthElementRect.height / 2);
+        // Получаем позицию элемента
+        const monthElementTop = monthElement.offsetTop;
+        const scrollContainerHeight = scrollContainer.clientHeight;
+        const monthElementHeight = monthElement.offsetHeight;
+        
+        // Вычисляем позицию прокрутки, чтобы месяц оказался в центре
+        const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
         
         scrollContainer.scrollTo({
-            top: scrollTo,
+            top: Math.max(0, scrollTo),
             behavior: isFirstLoad ? 'auto' : 'smooth'
         });
         
         setTimeout(() => {
             updateMonthHeader();
-        }, 500);
+        }, 100);
     }
 }
 
