@@ -1,6 +1,6 @@
 // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
 let currentYear = 2026;
-let currentMonthIndex = 3; // Апрель (0-январь, 3-апрель)
+let currentMonthIndex = 3;
 let monthsData = [];
 let isFirstLoad = true;
 
@@ -38,7 +38,9 @@ function initCalendar() {
     // Добавляем обработчик для кнопки сброса
     const resetBtn = document.getElementById('reset-calendar-btn');
     if (resetBtn) {
-        resetBtn.addEventListener('click', scrollToCurrentMonth);
+        resetBtn.addEventListener('click', () => {
+            scrollToCurrentMonth();
+        });
     }
     
     // По умолчанию всегда показываем текущий месяц в центре
@@ -46,6 +48,65 @@ function initCalendar() {
         scrollToCurrentMonth();
         isFirstLoad = false;
     }, 100);
+}
+
+// Получение количества недель в месяце
+function getWeeksInMonth(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    let startDay = firstDay.getDay();
+    startDay = startDay === 0 ? 6 : startDay - 1;
+    
+    const daysInMonth = lastDay.getDate();
+    const totalDays = startDay + daysInMonth;
+    const weeks = Math.ceil(totalDays / 7);
+    
+    return weeks;
+}
+
+// Расчет высоты окна для конкретного месяца
+function calculateWindowHeightForMonth(year, month) {
+    const weeks = getWeeksInMonth(year, month);
+    
+    // Базовые размеры
+    const weekdaysHeight = 45; // Высота строки с днями недели (в пикселях)
+    const dayCellHeight = 48; // Высота одной ячейки дня (в пикселях)
+    const padding = 16; // Дополнительные отступы
+    
+    // Вычисляем высоту
+    const height = weekdaysHeight + (weeks * dayCellHeight) + padding;
+    
+    return height;
+}
+
+// Установка высоты окна для текущего отображаемого месяца
+function adjustWindowHeight() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    const calendarWindow = document.getElementById('calendar-window');
+    
+    if (!scrollContainer || !calendarWindow) return;
+    
+    // Определяем, какой месяц сейчас в центре видимости
+    const scrollTop = scrollContainer.scrollTop;
+    let centerMonth = null;
+    
+    for (let i = 0; i < monthsData.length; i++) {
+        const monthElement = monthsData[i].element;
+        const offsetTop = monthElement.offsetTop;
+        const offsetBottom = offsetTop + monthElement.offsetHeight;
+        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
+        
+        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
+            centerMonth = monthsData[i];
+            break;
+        }
+    }
+    
+    if (centerMonth) {
+        const height = calculateWindowHeightForMonth(centerMonth.year, centerMonth.month);
+        calendarWindow.style.height = height + 'px';
+    }
 }
 
 // Генерация всех месяцев указанного года
@@ -62,10 +123,6 @@ function generateYearMonths(year) {
         const monthContainer = document.createElement('div');
         monthContainer.className = 'month-container';
         monthContainer.id = `month-${year}-${month}`;
-        
-        const monthTitle = document.createElement('div');
-        monthTitle.className = 'month-title';
-        monthTitle.textContent = `${monthNames[month]} ${year}`;
         
         const calendarDiv = document.createElement('div');
         calendarDiv.className = 'calendar';
@@ -89,19 +146,24 @@ function generateYearMonths(year) {
         
         calendarDiv.appendChild(weekdaysDiv);
         calendarDiv.appendChild(daysDiv);
-        monthContainer.appendChild(monthTitle);
         monthContainer.appendChild(calendarDiv);
         monthsContainer.appendChild(monthContainer);
         
         monthsData.push({
             year: year,
             month: month,
-            element: monthContainer
+            element: monthContainer,
+            weeksCount: getWeeksInMonth(year, month)
         });
     }
     
     // Обновляем заголовок с текущим месяцем
     updateMonthHeader();
+    
+    // Устанавливаем начальную высоту
+    setTimeout(() => {
+        adjustWindowHeight();
+    }, 50);
 }
 
 // Генерация дней для конкретного месяца
@@ -173,7 +235,6 @@ function updateMonthHeader() {
             break;
         }
         
-        // Если ни один месяц не в центре, находим ближайший
         const distanceToTop = Math.abs(viewportCenter - offsetTop);
         const distanceToBottom = Math.abs(viewportCenter - offsetBottom);
         const minDistance = Math.min(distanceToTop, distanceToBottom);
@@ -186,6 +247,8 @@ function updateMonthHeader() {
     
     if (currentMonth) {
         monthHeader.textContent = `${monthNames[currentMonth.month]} ${currentMonth.year}`;
+        // Обновляем высоту окна при смене месяца
+        adjustWindowHeight();
     }
 }
 
@@ -217,7 +280,7 @@ function scrollToCurrentMonth() {
     }
 }
 
-// Добавляем обработчик скролла для обновления заголовка
+// Добавляем обработчик скролла для обновления заголовка и высоты
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const scrollContainer = document.getElementById('calendar-scroll');
@@ -229,10 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
 });
 
-// Функция для будущего добавления новых годов (для расширения календаря)
+// Функция для будущего добавления новых годов
 function addYear(year) {
-    // Эта функция будет использоваться в будущем для добавления годов
-    // когда появятся тренировки в новых годах
     const monthsContainer = document.getElementById('calendar-months');
     if (!monthsContainer) return;
     
@@ -242,10 +303,6 @@ function addYear(year) {
         const monthContainer = document.createElement('div');
         monthContainer.className = 'month-container';
         monthContainer.id = `month-${year}-${month}`;
-        
-        const monthTitle = document.createElement('div');
-        monthTitle.className = 'month-title';
-        monthTitle.textContent = `${monthNames[month]} ${year}`;
         
         const calendarDiv = document.createElement('div');
         calendarDiv.className = 'calendar';
@@ -265,14 +322,14 @@ function addYear(year) {
         
         calendarDiv.appendChild(weekdaysDiv);
         calendarDiv.appendChild(daysDiv);
-        monthContainer.appendChild(monthTitle);
         monthContainer.appendChild(calendarDiv);
         monthsContainer.appendChild(monthContainer);
         
         monthsData.push({
             year: year,
             month: month,
-            element: monthContainer
+            element: monthContainer,
+            weeksCount: getWeeksInMonth(year, month)
         });
     }
 }
