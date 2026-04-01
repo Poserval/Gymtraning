@@ -23,9 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function setupSplashScreen() {
     const splash = document.getElementById("splash-screen");
-    const app = document.getElementById("page-calendar");
+    const pageCalendar = document.getElementById("page-calendar");
     
-    if (!splash || !app) return;
+    if (!splash || !pageCalendar) return;
     
     // Автоматический переход через 5 секунд
     splashTimeout = setTimeout(() => {
@@ -58,11 +58,11 @@ function hideSplashScreen() {
             splash.style.display = "none";
             pageCalendar.style.display = "block";
             
-            // После появления главного экрана прокручиваем к текущему месяцу
+            // После появления главного экрана сразу устанавливаем позицию на текущий месяц БЕЗ анимации
             setTimeout(() => {
-                scrollToCurrentMonth();
+                setInitialPositionToCurrentMonth();
                 isFirstLoad = false;
-            }, 100);
+            }, 50);
         }, 300);
     }
 }
@@ -153,6 +153,33 @@ function initCalendar() {
         resetBtn.addEventListener('click', () => {
             scrollToCurrentMonth();
         });
+    }
+}
+
+// Установка начальной позиции на текущий месяц БЕЗ прокрутки
+function setInitialPositionToCurrentMonth() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
+    if (monthElement) {
+        // Получаем позицию элемента
+        const monthElementTop = monthElement.offsetTop;
+        const scrollContainerHeight = scrollContainer.clientHeight;
+        const monthElementHeight = monthElement.offsetHeight;
+        
+        // Вычисляем позицию прокрутки, чтобы месяц оказался в центре
+        const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
+        
+        // Мгновенная установка позиции БЕЗ анимации
+        scrollContainer.scrollTop = Math.max(0, scrollTo);
+        
+        // Обновляем заголовок
+        updateMonthHeader();
     }
 }
 
@@ -287,7 +314,6 @@ function generateMonthDays(year, month, container) {
         dayElement.className = 'calendar-day';
         dayElement.textContent = day;
         
-        const currentDate = new Date(year, month, day);
         const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         
         if (day === today.getDate() && 
@@ -347,7 +373,7 @@ function updateMonthHeader() {
     }
 }
 
-// Прокрутка к текущему месяцу
+// Прокрутка к текущему месяцу (для кнопки reset)
 function scrollToCurrentMonth() {
     const scrollContainer = document.getElementById('calendar-scroll');
     if (!scrollContainer) return;
@@ -364,14 +390,15 @@ function scrollToCurrentMonth() {
         
         const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
         
+        // Плавная прокрутка для кнопки reset
         scrollContainer.scrollTo({
             top: Math.max(0, scrollTo),
-            behavior: isFirstLoad ? 'auto' : 'smooth'
+            behavior: 'smooth'
         });
         
         setTimeout(() => {
             updateMonthHeader();
-        }, 100);
+        }, 300);
     }
 }
 
