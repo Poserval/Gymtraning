@@ -1,0 +1,16 @@
+{
+  "name": "Gym Training",
+  "short_name": "GymTrain",
+  "description": "Простой трекер тренировок",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#ff9800",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
