@@ -1,0 +1,14 @@
+{
+  "appId": "com.gym.training",
+  "appName": "Gym Training",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#121212"
+    }
+  }
+}
