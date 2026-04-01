@@ -43,7 +43,8 @@ body::before {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
 }
 
 #splash-image {
@@ -51,6 +52,7 @@ body::before {
     height: 100%;
     object-fit: cover;
     display: block;
+    pointer-events: none;
 }
 
 /* Основное приложение */
@@ -167,7 +169,7 @@ body::before {
 }
 
 .month-title {
-    display: none; /* Скрываем дублирующее название месяца */
+    display: none;
 }
 
 /* Календарь для каждого месяца */
