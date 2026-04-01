@@ -6,6 +6,7 @@ let isFirstLoad = true;
 let splashTimeout = null;
 let isAppLoaded = false;
 let selectedDate = null;
+let currentPage = 'calendar';
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
@@ -17,6 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Настройка навигации
     setupNavigation();
+    
+    // Настройка нижней панели
+    setupBottomNav();
 });
 
 // ==================== ФУНКЦИИ ЗАСТАВКИ ====================
@@ -80,12 +84,58 @@ function setupNavigation() {
     
     // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
-        const pageWorkout = document.getElementById('page-workout');
-        if (pageWorkout && pageWorkout.style.display === 'block') {
+        if (currentPage !== 'calendar') {
             e.preventDefault();
             showPage('calendar');
         }
     }, false);
+}
+
+function setupBottomNav() {
+    const navTraining = document.getElementById('nav-training');
+    const navExercises = document.getElementById('nav-exercises');
+    const navProgress = document.getElementById('nav-progress');
+    
+    if (navTraining) {
+        navTraining.addEventListener('click', () => {
+            showPage('workout');
+            updateActiveNav('nav-training');
+        });
+    }
+    
+    if (navExercises) {
+        navExercises.addEventListener('click', () => {
+            // Пока просто показываем сообщение, функционал будет позже
+            alert('Страница упражнений в разработке');
+            updateActiveNav('nav-exercises');
+        });
+    }
+    
+    if (navProgress) {
+        navProgress.addEventListener('click', () => {
+            // Пока просто показываем сообщение, функционал будет позже
+            alert('Страница прогресса в разработке');
+            updateActiveNav('nav-progress');
+        });
+    }
+    
+    // Устанавливаем активной первую кнопку по умолчанию
+    updateActiveNav('nav-training');
+}
+
+function updateActiveNav(activeId) {
+    const navBtns = ['nav-training', 'nav-exercises', 'nav-progress'];
+    
+    navBtns.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            if (id === activeId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
 }
 
 // Показать указанную страницу
@@ -96,9 +146,13 @@ function showPage(pageName) {
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
         if (pageWorkout) pageWorkout.style.display = 'none';
+        currentPage = 'calendar';
+        updateActiveNav('nav-training');
     } else if (pageName === 'workout') {
         if (pageCalendar) pageCalendar.style.display = 'none';
         if (pageWorkout) pageWorkout.style.display = 'block';
+        currentPage = 'workout';
+        updateActiveNav('nav-training');
     }
 }
 
@@ -167,18 +221,14 @@ function setInitialPositionToCurrentMonth() {
     
     const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
     if (monthElement) {
-        // Получаем позицию элемента
         const monthElementTop = monthElement.offsetTop;
         const scrollContainerHeight = scrollContainer.clientHeight;
         const monthElementHeight = monthElement.offsetHeight;
         
-        // Вычисляем позицию прокрутки, чтобы месяц оказался в центре
         const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
         
-        // Мгновенная установка позиции БЕЗ анимации
         scrollContainer.scrollTop = Math.max(0, scrollTo);
         
-        // Обновляем заголовок
         updateMonthHeader();
     }
 }
@@ -322,7 +372,6 @@ function generateMonthDays(year, month, container) {
             dayElement.classList.add('today');
         }
         
-        // Добавляем обработчик для перехода на страницу тренировки
         dayElement.addEventListener('click', (e) => {
             e.stopPropagation();
             openWorkoutPage(dateStr);
@@ -390,7 +439,6 @@ function scrollToCurrentMonth() {
         
         const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
         
-        // Плавная прокрутка для кнопки reset
         scrollContainer.scrollTo({
             top: Math.max(0, scrollTo),
             behavior: 'smooth'
