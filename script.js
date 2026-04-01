@@ -158,16 +158,27 @@ function updateMonthHeader() {
     // Определяем, какой месяц сейчас в центре видимости
     const scrollTop = scrollContainer.scrollTop;
     let currentMonth = null;
+    let closestDistance = Infinity;
     
     for (let i = 0; i < monthsData.length; i++) {
         const monthElement = monthsData[i].element;
         const offsetTop = monthElement.offsetTop;
         const offsetBottom = offsetTop + monthElement.offsetHeight;
+        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
         
-        if (scrollTop + scrollContainer.clientHeight / 2 >= offsetTop && 
-            scrollTop + scrollContainer.clientHeight / 2 <= offsetBottom) {
+        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
             currentMonth = monthsData[i];
             break;
+        }
+        
+        // Если ни один месяц не в центре, находим ближайший
+        const distanceToTop = Math.abs(viewportCenter - offsetTop);
+        const distanceToBottom = Math.abs(viewportCenter - offsetBottom);
+        const minDistance = Math.min(distanceToTop, distanceToBottom);
+        
+        if (minDistance < closestDistance) {
+            closestDistance = minDistance;
+            currentMonth = monthsData[i];
         }
     }
     
@@ -187,7 +198,17 @@ function scrollToCurrentMonth() {
     
     const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
     if (monthElement) {
-        monthElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Прокручиваем так, чтобы месяц оказался в центре окна
+        const scrollContainerRect = scrollContainer.getBoundingClientRect();
+        const monthElementRect = monthElement.getBoundingClientRect();
+        const offset = monthElementRect.top - scrollContainerRect.top;
+        const scrollTo = scrollContainer.scrollTop + offset - (scrollContainerRect.height / 2) + (monthElementRect.height / 2);
+        
+        scrollContainer.scrollTo({
+            top: scrollTo,
+            behavior: 'smooth'
+        });
+        
         setTimeout(() => {
             updateMonthHeader();
         }, 500);
