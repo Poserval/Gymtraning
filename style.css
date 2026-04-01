@@ -305,6 +305,6 @@ body::before {
     
     /* Для мобильных устройств можно уменьшить высоту */
     .calendar-window {
-        height: 420px;
+        height: 390px;
     }
 }
