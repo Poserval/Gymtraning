@@ -111,10 +111,14 @@ body::before {
     transform: scale(0.95);
 }
 
-/* Окно календаря - фиксированный размер 1:1 */
+/* Окно календаря - регулируемая высота */
+/* Для изменения высоты, меняйте значение height */
 .calendar-window {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    /* ИЗМЕНИТЕ ЭТО ЗНАЧЕНИЕ ДЛЯ РЕГУЛИРОВКИ ВЫСОТЫ ОКНА */
+    height: 480px;  /* <-- ИЗМЕНЯЙТЕ ЭТУ ЦИФРУ (например: 400px, 450px, 500px, 550px) */
+    /* Для сохранения пропорций 1:1, раскомментируйте строку ниже и закомментируйте height */
+    /* aspect-ratio: 1 / 1; */
     background: transparent;
     overflow: hidden;
     position: relative;
@@ -297,5 +301,10 @@ body::before {
     .month-title {
         font-size: 14px;
         margin-bottom: 8px;
+    }
+    
+    /* Для мобильных устройств можно уменьшить высоту */
+    .calendar-window {
+        height: 420px;
     }
 }
