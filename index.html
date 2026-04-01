@@ -17,9 +17,28 @@
         <img id="splash-image" src="assets/icon-main.png" alt="Gym Training">
     </div>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ (изначально скрыт) -->
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
     <div id="app-content" style="display: none;">
-        <!-- Весь контент приложения будет здесь -->
+        <!-- Календарь -->
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <h2 id="current-month">Апрель 2026</h2>
+            </div>
+            <div class="calendar">
+                <div class="calendar-weekdays">
+                    <div>ПН</div>
+                    <div>ВТ</div>
+                    <div>СР</div>
+                    <div>ЧТ</div>
+                    <div>ПТ</div>
+                    <div>СБ</div>
+                    <div>ВС</div>
+                </div>
+                <div class="calendar-days" id="calendar-days">
+                    <!-- Дни будут добавлены через JavaScript -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
