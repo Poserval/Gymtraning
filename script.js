@@ -2,6 +2,7 @@
 let currentYear = 2026;
 let currentMonthIndex = 3; // Апрель (0-январь, 3-апрель)
 let monthsData = [];
+let isFirstLoad = true;
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
@@ -40,9 +41,10 @@ function initCalendar() {
         resetBtn.addEventListener('click', scrollToCurrentMonth);
     }
     
-    // Прокручиваем к текущему месяцу
+    // По умолчанию всегда показываем текущий месяц в центре
     setTimeout(() => {
         scrollToCurrentMonth();
+        isFirstLoad = false;
     }, 100);
 }
 
@@ -206,7 +208,7 @@ function scrollToCurrentMonth() {
         
         scrollContainer.scrollTo({
             top: scrollTo,
-            behavior: 'smooth'
+            behavior: isFirstLoad ? 'auto' : 'smooth'
         });
         
         setTimeout(() => {
