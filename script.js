@@ -99,11 +99,9 @@ function renderWorkoutsList() {
     setupDragAndDrop();
     setupWorkoutCardMenus();
     
-    // Добавляем обработчик открытия деталей тренировки
     document.querySelectorAll('.workout-card').forEach(card => {
         card.addEventListener('click', (e) => {
-            // Если клик не по кнопке меню
-            if (!e.target.closest('.workout-menu-btn')) {
+            if (!e.target.closest('.workout-menu-btn') && !e.target.closest('.drag-handle')) {
                 const index = parseInt(card.dataset.index);
                 openWorkoutDetail(index);
             }
@@ -116,7 +114,6 @@ function openWorkoutDetail(index) {
     const workout = workouts[index];
     if (!workout) return;
     
-    // Обновляем данные на странице деталей
     const dayBadge = document.getElementById('detail-day-badge');
     const workoutName = document.getElementById('detail-workout-name');
     
@@ -144,7 +141,6 @@ function openWorkoutDetail(index) {
         workoutName.textContent = workout.name;
     }
     
-    // Показываем страницу деталей
     showPage('workout-detail');
 }
 
@@ -365,7 +361,6 @@ function hideSplashScreen() {
 // ==================== ФУНКЦИИ НАВИГАЦИИ ====================
 
 function setupNavigation() {
-    // Назад из списка тренировок в календарь
     const backBtn = document.getElementById('back-to-calendar-btn');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
@@ -373,7 +368,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад из деталей тренировки в список тренировок
     const backToWorkoutListBtn = document.getElementById('back-to-workout-list-btn');
     if (backToWorkoutListBtn) {
         backToWorkoutListBtn.addEventListener('click', () => {
@@ -381,7 +375,6 @@ function setupNavigation() {
         });
     }
     
-    // Кнопка "Выбери упражнение" (пока без функционала)
     const addExerciseBtn = document.getElementById('add-exercise-btn');
     if (addExerciseBtn) {
         addExerciseBtn.addEventListener('click', () => {
@@ -389,7 +382,6 @@ function setupNavigation() {
         });
     }
     
-    // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
             e.preventDefault();
@@ -468,7 +460,6 @@ function showPage(pageName) {
         if (pageWorkout) pageWorkout.style.display = 'none';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'block';
         currentPage = 'workout-detail';
-        updateActiveNav('nav-training');
     }
 }
 
@@ -565,4 +556,232 @@ function setInitialPositionToCurrentMonth() {
     }
 }
 
-function getW
+function getWeeksInMonth(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    let startDay = firstDay.getDay();
+    startDay = startDay === 0 ? 6 : startDay - 1;
+    
+    const daysInMonth = lastDay.getDate();
+    const totalDays = startDay + daysInMonth;
+    const weeks = Math.ceil(totalDays / 7);
+    
+    return weeks;
+}
+
+function calculateWindowHeightForMonth(year, month) {
+    const weeks = getWeeksInMonth(year, month);
+    
+    const weekdaysHeight = 45;
+    const dayCellHeight = 48;
+    const padding = 16;
+    
+    const height = weekdaysHeight + (weeks * dayCellHeight) + padding;
+    
+    return height;
+}
+
+function adjustWindowHeight() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    const calendarWindow = document.getElementById('calendar-window');
+    
+    if (!scrollContainer || !calendarWindow) return;
+    
+    const scrollTop = scrollContainer.scrollTop;
+    let centerMonth = null;
+    
+    for (let i = 0; i < monthsData.length; i++) {
+        const monthElement = monthsData[i].element;
+        const offsetTop = monthElement.offsetTop;
+        const offsetBottom = offsetTop + monthElement.offsetHeight;
+        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
+        
+        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
+            centerMonth = monthsData[i];
+            break;
+        }
+    }
+    
+    if (centerMonth) {
+        const height = calculateWindowHeightForMonth(centerMonth.year, centerMonth.month);
+        calendarWindow.style.height = height + 'px';
+    }
+}
+
+function generateYearMonths(year) {
+    const monthsContainer = document.getElementById('calendar-months');
+    if (!monthsContainer) return;
+    
+    monthsContainer.innerHTML = '';
+    monthsData = [];
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    for (let month = 0; month < 12; month++) {
+        const monthContainer = document.createElement('div');
+        monthContainer.className = 'month-container';
+        monthContainer.id = `month-${year}-${month}`;
+        
+        const calendarDiv = document.createElement('div');
+        calendarDiv.className = 'calendar';
+        
+        const weekdaysDiv = document.createElement('div');
+        weekdaysDiv.className = 'calendar-weekdays';
+        const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+        weekdays.forEach(day => {
+            const dayDiv = document.createElement('div');
+            dayDiv.textContent = day;
+            weekdaysDiv.appendChild(dayDiv);
+        });
+        
+        const daysDiv = document.createElement('div');
+        daysDiv.className = 'calendar-days';
+        
+        generateMonthDays(year, month, daysDiv);
+        
+        calendarDiv.appendChild(weekdaysDiv);
+        calendarDiv.appendChild(daysDiv);
+        monthContainer.appendChild(calendarDiv);
+        monthsContainer.appendChild(monthContainer);
+        
+        monthsData.push({
+            year: year,
+            month: month,
+            element: monthContainer,
+            weeksCount: getWeeksInMonth(year, month)
+        });
+    }
+    
+    updateMonthHeader();
+    
+    setTimeout(() => {
+        adjustWindowHeight();
+    }, 50);
+}
+
+function generateMonthDays(year, month, container) {
+    const firstDayOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    
+    let startDay = firstDayOfMonth.getDay();
+    startDay = startDay === 0 ? 6 : startDay - 1;
+    
+    container.innerHTML = '';
+    
+    for (let i = 0; i < startDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        emptyDay.textContent = '';
+        container.appendChild(emptyDay);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day;
+        
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        
+        if (day === today.getDate() && 
+            month === today.getMonth() && 
+            year === today.getFullYear()) {
+            dayElement.classList.add('today');
+        }
+        
+        dayElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openWorkoutPage(dateStr);
+        });
+        
+        container.appendChild(dayElement);
+    }
+}
+
+function updateMonthHeader() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const monthHeader = document.getElementById('current-month');
+    if (!monthHeader) return;
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    const scrollTop = scrollContainer.scrollTop;
+    let currentMonth = null;
+    let closestDistance = Infinity;
+    
+    for (let i = 0; i < monthsData.length; i++) {
+        const monthElement = monthsData[i].element;
+        const offsetTop = monthElement.offsetTop;
+        const offsetBottom = offsetTop + monthElement.offsetHeight;
+        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
+        
+        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
+            currentMonth = monthsData[i];
+            break;
+        }
+        
+        const distanceToTop = Math.abs(viewportCenter - offsetTop);
+        const distanceToBottom = Math.abs(viewportCenter - offsetBottom);
+        const minDistance = Math.min(distanceToTop, distanceToBottom);
+        
+        if (minDistance < closestDistance) {
+            closestDistance = minDistance;
+            currentMonth = monthsData[i];
+        }
+    }
+    
+    if (currentMonth) {
+        monthHeader.textContent = `${monthNames[currentMonth.month]} ${currentMonth.year}`;
+        adjustWindowHeight();
+    }
+}
+
+function scrollToCurrentMonth() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
+    if (monthElement) {
+        const monthElementTop = monthElement.offsetTop;
+        const scrollContainerHeight = scrollContainer.clientHeight;
+        const monthElementHeight = monthElement.offsetHeight;
+        
+        const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
+        
+        scrollContainer.scrollTo({
+            top: Math.max(0, scrollTo),
+            behavior: 'smooth'
+        });
+        
+        setTimeout(() => {
+            updateMonthHeader();
+        }, 300);
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// Добавляем обработчик скролла
+setTimeout(() => {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', () => {
+            updateMonthHeader();
+        });
+    }
+}, 200);
