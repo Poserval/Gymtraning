@@ -271,19 +271,25 @@ body::after {
 /* ========== СТРАНИЦА ТРЕНИРОВКИ ========== */
 .workout-container {
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 160px 16px;
+    padding: 20px 16px 80px 16px;
+    position: relative;
 }
 
 .workout-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     padding: 10px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    position: sticky;
+    top: 0;
+    background: rgba(10, 10, 10, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 10;
 }
 
 .back-btn, .add-workout-btn {
@@ -310,6 +316,9 @@ body::after {
 
 .workout-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .workout-placeholder {
@@ -319,6 +328,7 @@ body::after {
     backdrop-filter: blur(10px);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: auto;
 }
 
 .workout-placeholder p {
@@ -336,11 +346,29 @@ body::after {
 /* === НАСТРОЙКИ КАРТОЧКИ ТРЕНИРОВКИ - МЕНЯЙТЕ ЗДЕСЬ !!! ===== */
 /* ============================================================ */
 
-/* Список тренировок */
+/* Список тренировок с прокруткой */
 .workouts-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    overflow-y: auto;
+    flex: 1;
+    padding-bottom: 20px;
+}
+
+/* Кастомный скроллбар для списка тренировок */
+.workouts-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.workouts-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.workouts-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
 }
 
 .workout-card {
@@ -365,8 +393,8 @@ body::after {
 /* МЕНЯЙТЕ: left, top */
 .drag-handle {
     position: absolute;
-    left: 12px;      /* ← двигай ВПРАВО/ВЛЕВО (12px - ближе к краю, 20px - дальше) */
-    top: 50%;        /* ← двигай ВНИЗ/ВВЕРХ (50% = центр, 40% = выше, 60% = ниже) */
+    left: 12px;
+    top: 50%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
@@ -395,8 +423,8 @@ body::after {
 /* МЕНЯЙТЕ: right, top */
 .workout-menu-btn {
     position: absolute;
-    right: 12px;     /* ← двигай ВЛЕВО/ВПРАВО (12px - ближе к краю, 20px - дальше) */
-    top: 50%;        /* ← двигай ВНИЗ/ВВЕРХ (50% = центр, 40% = выше, 60% = ниже) */
+    right: 12px;
+    top: 50%;
     transform: translateY(-50%);
     background: transparent;
     border: none;
@@ -423,11 +451,11 @@ body::after {
 /* ===== 3. КОНТЕЙНЕР ВСЕГО КОНТЕНТА ===== */
 /* МЕНЯЙТЕ: margin-left (отступ от левых точек), margin-right (отступ от правых точек) */
 .workout-card-content {
-    margin-left: 45px;    /* ← отступ от левых точек (увеличивай/уменьшай) */
-    margin-right: 35px;   /* ← отступ от правых точек (увеличивай/уменьшай) */
+    margin-left: 45px;
+    margin-right: 35px;
     display: flex;
     flex-direction: column;
-    align-items:center;
+    align-items: center;
 }
 
 /* ===== 4. ДЕНЬ НЕДЕЛИ (Понедельник) ===== */
@@ -442,9 +470,9 @@ body::after {
     margin-top: 0px;
     margin-bottom: 20px;
     text-align: center;
-    width: fit-content;        /* ← ширина по содержимому */
-    margin-left: auto;         /* ← прижимает к центру */
-    margin-right: auto;        /* ← прижимает к центру */
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .workout-day-badge.any-day {
@@ -458,11 +486,11 @@ body::after {
     font-size: 18px;
     font-weight: 600;
     color: #fff;
-    margin-top: 10px;       /* ← двигай ВНИЗ (увеличивай: 5px, 10px) или ВВЕРХ (отрицательные: -5px, -10px) */
-    margin-left: 0px;      /* ← двигай ВПРАВО (увеличивай: 5px, 10px) */
-    padding-left: 0px;     /* ← двигай ВПРАВО (увеличивай: 5px, 10px) */
+    margin-top: 10px;
+    margin-left: 0px;
+    padding-left: 0px;
     text-align: left;
-    width: 100%;           /* ← left = слева, center = по центру, right = справа */
+    width: 100%;
 }
 
 /* ============================================================ */
@@ -683,23 +711,22 @@ body::after {
         font-size: 20px;
     }
     
-    /* ===== ИЗМЕНЕНИЯ ТОЛЬКО ЗДЕСЬ (уменьшение высоты карточки) ===== */
+    /* Мобильные настройки карточки */
     .workout-card {
-        min-height: 85px;        /* ← было 110px, уменьшено на 25% */
-        padding: 10px;           /* ← было 14px, уменьшено */
+        min-height: 85px;
+        padding: 10px;
     }
     
     .workout-day-badge {
         font-size: 10px;
-        padding: 2px 10px;       /* ← было 3px 12px, уменьшено */
-        margin-bottom: 6px;      /* ← ДОБАВЛЕНО: расстояние до названия */
+        padding: 2px 10px;
+        margin-bottom: 6px;
     }
     
     .workout-name {
-        font-size: 14px;         /* ← было 16px, уменьшено */
-        margin-top: 6px;         /* ← ДОБАВЛЕНО: убираем лишний отступ сверху */
+        font-size: 14px;
+        margin-top: 6px;
     }
-    /* ===== КОНЕЦ ИЗМЕНЕНИЙ ===== */
     
     .drag-handle {
         left: 8px;
