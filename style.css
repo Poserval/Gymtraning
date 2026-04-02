@@ -683,19 +683,23 @@ body::after {
         font-size: 20px;
     }
     
+    /* ===== ИЗМЕНЕНИЯ ТОЛЬКО ЗДЕСЬ (уменьшение высоты карточки) ===== */
     .workout-card {
-        min-height: 110px;
-        padding: 14px;
+        min-height: 85px;        /* ← было 110px, уменьшено на 25% */
+        padding: 10px;           /* ← было 14px, уменьшено */
     }
     
     .workout-day-badge {
         font-size: 10px;
-        padding: 3px 12px;
+        padding: 2px 10px;       /* ← было 3px 12px, уменьшено */
+        margin-bottom: 6px;      /* ← ДОБАВЛЕНО: расстояние до названия */
     }
     
     .workout-name {
-        font-size: 16px;
+        font-size: 14px;         /* ← было 16px, уменьшено */
+        margin-top: 0px;         /* ← ДОБАВЛЕНО: убираем лишний отступ сверху */
     }
+    /* ===== КОНЕЦ ИЗМЕНЕНИЙ ===== */
     
     .drag-handle {
         left: 8px;
