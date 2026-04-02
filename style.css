@@ -336,20 +336,21 @@ body::after {
 .workouts-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .workout-card {
     background: rgba(30, 30, 30, 0.8);
     backdrop-filter: blur(10px);
-    border-radius: 14px;
-    padding: 12px 16px;
+    border-radius: 16px;
+    padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     gap: 12px;
     transition: all 0.2s ease;
     cursor: move;
+    position: relative;
 }
 
 .workout-card.dragging {
@@ -357,13 +358,14 @@ body::after {
     transform: scale(0.98);
 }
 
-/* 6 точек для перемещения */
+/* 6 точек для перемещения - слева по центру по вертикали */
 .drag-handle {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
     cursor: grab;
-    padding: 4px 2px;
+    padding: 8px 4px;
+    align-self: center;
 }
 
 .drag-handle:active {
@@ -371,16 +373,16 @@ body::after {
 }
 
 .drag-dot {
-    width: 3px;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.4);
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
     margin: 1px 0;
 }
 
 .drag-dots-row {
     display: flex;
-    gap: 3px;
+    gap: 4px;
 }
 
 /* Контент карточки */
@@ -388,30 +390,17 @@ body::after {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.workout-card-header {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 4px;
-    position: relative;
+    gap: 8px;
 }
 
 /* Бейдж дня недели - по центру сверху */
 .workout-day-badge {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    align-self: center;
     background: #ff9800;
     color: #000;
-    padding: 3px 12px;
+    padding: 4px 16px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -421,20 +410,27 @@ body::after {
     color: #fff;
 }
 
-/* Кнопка меню (три точки) */
+/* Название тренировки - слева, по центру вертикально */
+.workout-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    text-align: left;
+    padding-left: 4px;
+}
+
+/* Кнопка меню (три точки) - справа по центру вертикально */
 .workout-menu-btn {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 4px;
+    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     transition: background 0.2s ease;
-    margin-left: auto;
-    position: relative;
-    z-index: 2;
+    align-self: center;
 }
 
 .workout-menu-btn:active {
@@ -442,18 +438,8 @@ body::after {
 }
 
 .workout-menu-btn svg {
-    width: 18px;
-    height: 18px;
-}
-
-/* Название тренировки - по центру */
-.workout-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #fff;
-    margin-top: 20px;
-    text-align: center;
-    width: 100%;
+    width: 20px;
+    height: 20px;
 }
 
 /* ========== МОДАЛЬНОЕ ОКНО ========== */
@@ -671,22 +657,30 @@ body::after {
     }
     
     .workout-card {
-        padding: 10px 14px;
+        padding: 12px;
     }
     
     .workout-day-badge {
         font-size: 10px;
-        padding: 2px 10px;
+        padding: 3px 12px;
     }
     
     .workout-name {
-        font-size: 14px;
-        margin-top: 18px;
+        font-size: 16px;
     }
     
     .drag-dot {
         width: 3px;
         height: 3px;
+    }
+    
+    .drag-dots-row {
+        gap: 3px;
+    }
+    
+    .drag-handle {
+        gap: 3px;
+        padding: 6px 2px;
     }
     
     .nav-icon {
