@@ -427,6 +427,7 @@ body::after {
     margin-right: 35px;   /* ← отступ от правых точек (увеличивай/уменьшай) */
     display: flex;
     flex-direction: column;
+    align-items:center;
 }
 
 /* ===== 4. ДЕНЬ НЕДЕЛИ (Понедельник) ===== */
