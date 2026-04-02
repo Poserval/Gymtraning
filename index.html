@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Gym Training">
 </head>
 <body>
-    <!-- ЭКРАН ЗАСТАВКИ (полноэкранная картинка) -->
+    <!-- ЭКРАН ЗАСТАВКИ -->
     <div id="splash-screen">
         <img id="splash-image" src="assets/icon-main.png" alt="Gym Training">
     </div>
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 2: ТРЕНИРОВКА -->
+    <!-- СТРАНИЦА 2: СПИСОК ТРЕНИРОВОК -->
     <div id="page-workout" class="page" style="display: none;">
         <div class="workout-container">
             <div class="workout-header">
@@ -48,7 +48,7 @@
                         <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
                     </svg>
                 </button>
-                <h2 id="workout-date-title">Создай тренировку</h2>
+                <h2 id="workout-title">Создай тренировку</h2>
                 <button id="add-workout-btn" class="add-workout-btn" title="Добавить тренировку">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
@@ -62,6 +62,39 @@
                 <div id="empty-workouts" class="workout-placeholder">
                     <p>Нет созданных тренировок</p>
                     <p style="margin-top: 20px; color: #888;">Нажмите + чтобы создать тренировку</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА 3: ДЕТАЛИ ТРЕНИРОВКИ -->
+    <div id="page-workout-detail" class="page" style="display: none;">
+        <div class="detail-container">
+            <div class="detail-header">
+                <button id="back-to-workout-list-btn" class="back-btn" title="Назад">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
+                    </svg>
+                </button>
+                <div class="detail-header-info">
+                    <span class="detail-day-badge" id="detail-day-badge">Пн</span>
+                    <h2 id="detail-workout-name">Спина</h2>
+                </div>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="detail-content">
+                <button id="add-exercise-btn" class="add-exercise-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#ff9800"/>
+                    </svg>
+                    <span>Выбери упражнение</span>
+                </button>
+                <div id="exercises-list" class="exercises-list">
+                    <!-- Список упражнений будет здесь -->
+                </div>
+                <div id="empty-exercises" class="empty-exercises">
+                    <p>Нет добавленных упражнений</p>
+                    <p style="margin-top: 10px; color: #888;">Нажмите "Выбери упражнение" чтобы добавить</p>
                 </div>
             </div>
         </div>
@@ -125,7 +158,7 @@
         </div>
     </div>
 
-    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (BOTTOM BAR) -->
+    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
     <div class="bottom-nav">
         <button class="nav-btn" id="nav-training" data-page="workout">
             <img src="assets/icon-training-button.png" alt="Тренировка" class="nav-icon">
