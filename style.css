@@ -456,7 +456,7 @@ body::after {
     font-size: 18px;
     font-weight: 600;
     color: #fff;
-    margin-top: 20px;       /* ← двигай ВНИЗ (увеличивай: 5px, 10px) или ВВЕРХ (отрицательные: -5px, -10px) */
+    margin-top: 50px;       /* ← двигай ВНИЗ (увеличивай: 5px, 10px) или ВВЕРХ (отрицательные: -5px, -10px) */
     margin-left: 0px;      /* ← двигай ВПРАВО (увеличивай: 5px, 10px) */
     padding-left: 0px;     /* ← двигай ВПРАВО (увеличивай: 5px, 10px) */
     text-align: left;      /* ← left = слева, center = по центру, right = справа */
