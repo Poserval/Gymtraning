@@ -274,7 +274,7 @@ body::after {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 20px 16px;
+    padding: 80px 16px;
 }
 
 .workout-header {
