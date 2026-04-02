@@ -332,6 +332,10 @@ body::after {
     color: #ff9800;
 }
 
+/* ============================================================ */
+/* === НАСТРОЙКИ КАРТОЧКИ ТРЕНИРОВКИ - МЕНЯЙТЕ ЗДЕСЬ !!! ===== */
+/* ============================================================ */
+
 /* Список тренировок */
 .workouts-list {
     display: flex;
@@ -357,11 +361,12 @@ body::after {
     transform: scale(0.98);
 }
 
-/* Левая сторона - 6 точек вертикально */
+/* ===== 1. ШЕСТЬ ТОЧЕК (слева) ===== */
+/* МЕНЯЙТЕ: left, top */
 .drag-handle {
     position: absolute;
-    left: 12px;
-    top: 50%;
+    left: 12px;      /* ← двигай ВПРАВО/ВЛЕВО (12px - ближе к краю, 20px - дальше) */
+    top: 50%;        /* ← двигай ВНИЗ/ВВЕРХ (50% = центр, 40% = выше, 60% = ниже) */
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
@@ -386,11 +391,12 @@ body::after {
     border-radius: 50%;
 }
 
-/* Правая сторона - 3 точки вертикально */
+/* ===== 2. ТРИ ТОЧКИ (справа) ===== */
+/* МЕНЯЙТЕ: right, top */
 .workout-menu-btn {
     position: absolute;
-    right: 12px;
-    top: 50%;
+    right: 12px;     /* ← двигай ВЛЕВО/ВПРАВО (12px - ближе к краю, 20px - дальше) */
+    top: 50%;        /* ← двигай ВНИЗ/ВВЕРХ (50% = центр, 40% = выше, 60% = ниже) */
     transform: translateY(-50%);
     background: transparent;
     border: none;
@@ -414,16 +420,17 @@ body::after {
     border-radius: 50%;
 }
 
-/* Контент карточки */
+/* ===== 3. КОНТЕЙНЕР ВСЕГО КОНТЕНТА ===== */
+/* МЕНЯЙТЕ: margin-left (отступ от левых точек), margin-right (отступ от правых точек) */
 .workout-card-content {
-    flex: 1;
+    margin-left: 45px;    /* ← отступ от левых точек (увеличивай/уменьшай) */
+    margin-right: 35px;   /* ← отступ от правых точек (увеличивай/уменьшай) */
     display: flex;
     flex-direction: column;
-    margin-left: 45px;
-    margin-right: 35px;
 }
 
-/* День недели - на уровне верхнего ряда точек */
+/* ===== 4. ДЕНЬ НЕДЕЛИ (Понедельник) ===== */
+/* МЕНЯЙТЕ: margin-top, margin-bottom */
 .workout-day-badge {
     align-self: center;
     background: #ff9800;
@@ -433,8 +440,9 @@ body::after {
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
-    margin-top: 0;
-    margin-bottom: 20px;
+    margin-top: 0px;       /* ← двигай ВНИЗ (увеличивай: 5px, 10px) или ВВЕРХ (отрицательные: -5px, -10px) */
+    margin-bottom: 20px;   /* ← расстояние до названия тренировки (увеличивай/уменьшай) */
+    text-align: center;
 }
 
 .workout-day-badge.any-day {
@@ -442,15 +450,21 @@ body::after {
     color: #fff;
 }
 
-/* Название тренировки - на уровне среднего ряда точек */
+/* ===== 5. НАЗВАНИЕ ТРЕНИРОВКИ (Спина) ===== */
+/* МЕНЯЙТЕ: margin-top, margin-left, text-align */
 .workout-name {
     font-size: 18px;
     font-weight: 600;
     color: #fff;
-    text-align: left;
-    padding-left: 0;
-    margin: 0;
+    margin-top: 0px;       /* ← двигай ВНИЗ (увеличивай: 5px, 10px) или ВВЕРХ (отрицательные: -5px, -10px) */
+    margin-left: 0px;      /* ← двигай ВПРАВО (увеличивай: 5px, 10px) */
+    padding-left: 0px;     /* ← двигай ВПРАВО (увеличивай: 5px, 10px) */
+    text-align: left;      /* ← left = слева, center = по центру, right = справа */
 }
+
+/* ============================================================ */
+/* === КОНЕЦ НАСТРОЕК === */
+/* ============================================================ */
 
 /* ========== МОДАЛЬНОЕ ОКНО ========== */
 .modal {
@@ -674,7 +688,6 @@ body::after {
     .workout-day-badge {
         font-size: 10px;
         padding: 3px 12px;
-        margin-bottom: 16px;
     }
     
     .workout-name {
@@ -718,59 +731,4 @@ body::after {
     .workout-header h2 {
         font-size: 18px;
     }
-}
-
-/* ========== НАСТРОЙКИ ПОЛОЖЕНИЯ ЭЛЕМЕНТОВ КАРТОЧКИ ========== */
-/* 
-   ИЗМЕНЯЙТЕ ЭТИ ЗНАЧЕНИЯ ДЛЯ НАСТРОЙКИ ПОЛОЖЕНИЯ:
-   - top: двигает элемент вверх/вниз (относительно верхнего края карточки)
-   - left: двигает элемент влево/вправо (относительно левого края)
-   - right: двигает элемент влево/вправо (относительно правого края)
-*/
-
-/* 1. ШЕСТЬ ТОЧЕК (слева) */
-.drag-handle {
-    position: absolute;
-    left: 12px;      /* ← двигай ВПРАВО/ВЛЕВО (увеличивай/уменьшай) */
-    top: 50%;        /* ← двигай ВНИЗ/ВВЕРХ (50% = центр, 40% = выше, 60% = ниже) */
-    transform: translateY(-50%);
-}
-
-/* 2. ТРИ ТОЧКИ (справа) */
-.workout-menu-btn {
-    position: absolute;
-    right: 12px;     /* ← двигай ВЛЕВО/ВПРАВО (увеличивай/уменьшай) */
-    top: 50%;        /* ← двигай ВНИЗ/ВВЕРХ (50% = центр, 40% = выше, 60% = ниже) */
-    transform: translateY(-50%);
-}
-
-/* 3. ДЕНЬ НЕДЕЛИ (Понедельник) */
-.workout-day-badge {
-    position: relative;
-    display: inline-block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 0px;      /* ← двигай ВНИЗ (увеличивай) или ВВЕРХ (уменьшай) */
-    margin-bottom: 20px;  /* ← расстояние до названия тренировки */
-    text-align: center;
-}
-
-/* 4. НАЗВАНИЕ ТРЕНИРОВКИ (Спина) */
-.workout-name {
-    position: relative;
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-    margin-top: 0px;      /* ← двигай ВНИЗ (увеличивай) или ВВЕРХ (уменьшай) */
-    margin-left: 0px;     /* ← двигай ВПРАВО (увеличивай) */
-    padding-left: 0px;    /* ← двигай ВПРАВО (увеличивай) */
-    text-align: left;     /* left = слева, center = по центру, right = справа */
-}
-
-/* 5. КОНТЕЙНЕР ВСЕГО КОНТЕНТА (отступы от точек) */
-.workout-card-content {
-    margin-left: 45px;    /* ← отступ от левых точек (увеличивай/уменьшай) */
-    margin-right: 35px;   /* ← отступ от правых точек (увеличивай/уменьшай) */
-    display: flex;
-    flex-direction: column;
 }
