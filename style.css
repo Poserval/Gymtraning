@@ -430,9 +430,7 @@ body::after {
 }
 
 /* ===== 4. ДЕНЬ НЕДЕЛИ (Понедельник) ===== */
-/* МЕНЯЙТЕ: margin-top, margin-bottom */
 .workout-day-badge {
-    align-self: center;
     background: #ff9800;
     color: #000;
     padding: 4px 16px;
@@ -440,9 +438,12 @@ body::after {
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
-    margin-top: 0px;       /* ← двигай ВНИЗ (увеличивай: 5px, 10px) или ВВЕРХ (отрицательные: -5px, -10px) */
-    margin-bottom: 20px;   /* ← расстояние до названия тренировки (увеличивай/уменьшай) */
+    margin-top: 0px;
+    margin-bottom: 20px;
     text-align: center;
+    width: fit-content;        /* ← ширина по содержимому */
+    margin-left: auto;         /* ← прижимает к центру */
+    margin-right: auto;        /* ← прижимает к центру */
 }
 
 .workout-day-badge.any-day {
