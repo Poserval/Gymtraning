@@ -274,7 +274,7 @@ body::after {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 20px 16px 80px 16px;
+    padding: 200px 16px 80px 16px;
     position: relative;
 }
 
