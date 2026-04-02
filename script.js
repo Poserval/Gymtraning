@@ -8,6 +8,8 @@ let isAppLoaded = false;
 let selectedDate = null;
 let currentPage = 'calendar';
 let workouts = [];
+let editingWorkoutIndex = null;
+let dragStartIndex = null;
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
@@ -28,6 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Настройка модального окна
     setupModal();
+    
+    // Настройка меню карточки
+    setupWorkoutMenu();
 });
 
 // ==================== РАБОТА С ТРЕНИРОВКАМИ ====================
@@ -74,22 +79,202 @@ function renderWorkoutsList() {
     };
     
     workoutsList.innerHTML = workouts.map((workout, index) => `
-        <div class="workout-card" data-index="${index}">
-            <div class="workout-card-header">
-                <span class="workout-day-badge ${workout.day === 'any' ? 'any-day' : ''}">
-                    ${dayNames[workout.day]}
-                </span>
+        <div class="workout-card" data-index="${index}" draggable="true">
+            <div class="drag-handle">
+                <div class="drag-dots-row">
+                    <div class="drag-dot"></div>
+                    <div class="drag-dot"></div>
+                </div>
+                <div class="drag-dots-row">
+                    <div class="drag-dot"></div>
+                    <div class="drag-dot"></div>
+                </div>
+                <div class="drag-dots-row">
+                    <div class="drag-dot"></div>
+                    <div class="drag-dot"></div>
+                </div>
             </div>
-            <div class="workout-name">${escapeHtml(workout.name)}</div>
+            <div class="workout-card-content">
+                <div class="workout-card-header">
+                    <span class="workout-day-badge ${workout.day === 'any' ? 'any-day' : ''}">
+                        ${dayNames[workout.day]}
+                    </span>
+                    <button class="workout-menu-btn" data-index="${index}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="white"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="workout-name">${escapeHtml(workout.name)}</div>
+            </div>
         </div>
     `).join('');
     
-    document.querySelectorAll('.workout-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const index = parseInt(card.dataset.index);
-            console.log('Выбрана тренировка:', workouts[index]);
+    setupDragAndDrop();
+    setupWorkoutCardMenus();
+}
+
+function setupDragAndDrop() {
+    const cards = document.querySelectorAll('.workout-card');
+    let dragOverIndex = null;
+    
+    cards.forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+            dragStartIndex = parseInt(card.dataset.index);
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        card.addEventListener('dragend', (e) => {
+            card.classList.remove('dragging');
+            if (dragOverIndex !== null && dragStartIndex !== null && dragStartIndex !== dragOverIndex) {
+                const [movedItem] = workouts.splice(dragStartIndex, 1);
+                workouts.splice(dragOverIndex, 0, movedItem);
+                saveWorkouts();
+            }
+            dragStartIndex = null;
+            dragOverIndex = null;
+        });
+        
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const targetIndex = parseInt(card.dataset.index);
+            if (targetIndex !== dragOverIndex) {
+                dragOverIndex = targetIndex;
+            }
         });
     });
+}
+
+function setupWorkoutCardMenus() {
+    const menuBtns = document.querySelectorAll('.workout-menu-btn');
+    menuBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.index);
+            showWorkoutMenu(e.target.closest('button'), index);
+        });
+    });
+}
+
+function setupWorkoutMenu() {
+    const menu = document.getElementById('workout-menu');
+    const editBtn = document.getElementById('menu-edit');
+    const copyBtn = document.getElementById('menu-copy');
+    const deleteBtn = document.getElementById('menu-delete');
+    
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            if (editingWorkoutIndex !== null) {
+                openEditModal(editingWorkoutIndex);
+            }
+            closeWorkoutMenu();
+        });
+    }
+    
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            if (editingWorkoutIndex !== null) {
+                copyWorkout(editingWorkoutIndex);
+            }
+            closeWorkoutMenu();
+        });
+    }
+    
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if (editingWorkoutIndex !== null && confirm('Удалить тренировку?')) {
+                workouts.splice(editingWorkoutIndex, 1);
+                saveWorkouts();
+            }
+            closeWorkoutMenu();
+        });
+    }
+    
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.workout-menu-btn') && !e.target.closest('#workout-menu')) {
+            closeWorkoutMenu();
+        }
+    });
+}
+
+function showWorkoutMenu(button, index) {
+    const menu = document.getElementById('workout-menu');
+    if (!menu) return;
+    
+    editingWorkoutIndex = index;
+    const rect = button.getBoundingClientRect();
+    
+    menu.style.display = 'block';
+    menu.style.position = 'fixed';
+    menu.style.top = rect.bottom + 5 + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+    
+    setTimeout(() => {
+        const closeHandler = () => {
+            closeWorkoutMenu();
+            document.removeEventListener('click', closeHandler);
+        };
+        setTimeout(() => {
+            document.addEventListener('click', closeHandler);
+        }, 10);
+    }, 10);
+}
+
+function closeWorkoutMenu() {
+    const menu = document.getElementById('workout-menu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
+    editingWorkoutIndex = null;
+}
+
+function copyWorkout(index) {
+    const original = workouts[index];
+    const copy = {
+        ...original,
+        id: Date.now(),
+        name: original.name + ' (копия)'
+    };
+    workouts.splice(index + 1, 0, copy);
+    saveWorkouts();
+}
+
+function openEditModal(index) {
+    const workout = workouts[index];
+    if (!workout) return;
+    
+    const modal = document.getElementById('workout-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const nameInput = document.getElementById('workout-name');
+    const daySelect = document.getElementById('workout-day');
+    const confirmBtn = document.getElementById('confirm-workout-btn');
+    
+    if (modalTitle) modalTitle.textContent = 'Редактировать тренировку';
+    if (nameInput) nameInput.value = workout.name;
+    if (daySelect) daySelect.value = workout.day;
+    
+    // Сохраняем старый обработчик
+    const oldConfirmHandler = confirmBtn.onclick;
+    
+    confirmBtn.onclick = () => {
+        const newName = nameInput ? nameInput.value.trim() : '';
+        const newDay = daySelect ? daySelect.value : 'any';
+        
+        if (newName) {
+            workouts[index].name = newName;
+            workouts[index].day = newDay;
+            saveWorkouts();
+            if (modal) modal.style.display = 'none';
+            // Восстанавливаем старый обработчик
+            confirmBtn.onclick = oldConfirmHandler;
+        } else {
+            alert('Введите название тренировки');
+        }
+    };
+    
+    if (modal) modal.style.display = 'flex';
 }
 
 function addWorkout(name, day) {
@@ -102,7 +287,8 @@ function addWorkout(name, day) {
         id: Date.now(),
         name: name.trim(),
         day: day,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        exercises: []
     });
     
     saveWorkouts();
@@ -269,11 +455,28 @@ function setupModal() {
     const cancelBtn = document.getElementById('cancel-workout-btn');
     const confirmBtn = document.getElementById('confirm-workout-btn');
     const workoutName = document.getElementById('workout-name');
+    const modalTitle = document.getElementById('modal-title');
     
     if (addBtn) {
         addBtn.addEventListener('click', () => {
             if (modal) {
+                if (modalTitle) modalTitle.textContent = 'Создать тренировку';
                 if (workoutName) workoutName.value = '';
+                const daySelect = document.getElementById('workout-day');
+                if (daySelect) daySelect.value = 'any';
+                
+                // Восстанавливаем обработчик для создания
+                confirmBtn.onclick = () => {
+                    const name = workoutName ? workoutName.value.trim() : '';
+                    const daySelect = document.getElementById('workout-day');
+                    const day = daySelect ? daySelect.value : 'any';
+                    
+                    if (addWorkout(name, day)) {
+                        if (modal) modal.style.display = 'none';
+                        renderWorkoutsList();
+                    }
+                };
+                
                 modal.style.display = 'flex';
             }
         });
@@ -282,19 +485,6 @@ function setupModal() {
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
             if (modal) modal.style.display = 'none';
-        });
-    }
-    
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', () => {
-            const name = workoutName ? workoutName.value.trim() : '';
-            const daySelect = document.getElementById('workout-day');
-            const day = daySelect ? daySelect.value : 'any';
-            
-            if (addWorkout(name, day)) {
-                if (modal) modal.style.display = 'none';
-                renderWorkoutsList();
-            }
         });
     }
     
@@ -556,16 +746,6 @@ function scrollToCurrentMonth() {
     }
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
-
 // Добавляем обработчик скролла
 setTimeout(() => {
     const scrollContainer = document.getElementById('calendar-scroll');
@@ -575,3 +755,15 @@ setTimeout(() => {
         });
     }
 }, 200);
+
+// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
