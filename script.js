@@ -10,28 +10,16 @@ let currentPage = 'calendar';
 let workouts = [];
 let editingWorkoutIndex = null;
 let dragStartIndex = null;
+let currentWorkoutIndex = null;
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
-    // Загрузка сохраненных тренировок
     loadWorkouts();
-    
-    // Инициализация календаря
     initCalendar();
-    
-    // Настройка заставки
     setupSplashScreen();
-    
-    // Настройка навигации
     setupNavigation();
-    
-    // Настройка нижней панели
     setupBottomNav();
-    
-    // Настройка модального окна
     setupModal();
-    
-    // Настройка меню карточки
     setupWorkoutMenu();
 });
 
@@ -95,23 +83,69 @@ function renderWorkoutsList() {
                 </div>
             </div>
             <div class="workout-card-content">
-                <div class="workout-card-header">
-                    <span class="workout-day-badge ${workout.day === 'any' ? 'any-day' : ''}">
-                        ${dayNames[workout.day]}
-                    </span>
-                    <button class="workout-menu-btn" data-index="${index}">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="white"/>
-                        </svg>
-                    </button>
+                <div class="workout-day-badge ${workout.day === 'any' ? 'any-day' : ''}">
+                    ${dayNames[workout.day]}
                 </div>
                 <div class="workout-name">${escapeHtml(workout.name)}</div>
             </div>
+            <button class="workout-menu-btn" data-index="${index}">
+                <div class="menu-dot"></div>
+                <div class="menu-dot"></div>
+                <div class="menu-dot"></div>
+            </button>
         </div>
     `).join('');
     
     setupDragAndDrop();
     setupWorkoutCardMenus();
+    
+    // Добавляем обработчик открытия деталей тренировки
+    document.querySelectorAll('.workout-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Если клик не по кнопке меню
+            if (!e.target.closest('.workout-menu-btn')) {
+                const index = parseInt(card.dataset.index);
+                openWorkoutDetail(index);
+            }
+        });
+    });
+}
+
+function openWorkoutDetail(index) {
+    currentWorkoutIndex = index;
+    const workout = workouts[index];
+    if (!workout) return;
+    
+    // Обновляем данные на странице деталей
+    const dayBadge = document.getElementById('detail-day-badge');
+    const workoutName = document.getElementById('detail-workout-name');
+    
+    const shortDayNames = {
+        'monday': 'Пн',
+        'tuesday': 'Вт',
+        'wednesday': 'Ср',
+        'thursday': 'Чт',
+        'friday': 'Пт',
+        'saturday': 'Сб',
+        'sunday': 'Вс',
+        'any': 'Любой'
+    };
+    
+    if (dayBadge) {
+        dayBadge.textContent = shortDayNames[workout.day] || 'Любой';
+        if (workout.day === 'any') {
+            dayBadge.classList.add('any-day');
+        } else {
+            dayBadge.classList.remove('any-day');
+        }
+    }
+    
+    if (workoutName) {
+        workoutName.textContent = workout.name;
+    }
+    
+    // Показываем страницу деталей
+    showPage('workout-detail');
 }
 
 function setupDragAndDrop() {
@@ -119,6 +153,8 @@ function setupDragAndDrop() {
     let dragOverIndex = null;
     
     cards.forEach(card => {
+        card.setAttribute('draggable', 'true');
+        
         card.addEventListener('dragstart', (e) => {
             dragStartIndex = parseInt(card.dataset.index);
             card.classList.add('dragging');
@@ -153,7 +189,7 @@ function setupWorkoutCardMenus() {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const index = parseInt(btn.dataset.index);
-            showWorkoutMenu(e.target.closest('button'), index);
+            showWorkoutMenu(btn, index);
         });
     });
 }
@@ -167,9 +203,9 @@ function setupWorkoutMenu() {
     if (editBtn) {
         editBtn.addEventListener('click', () => {
             if (editingWorkoutIndex !== null) {
+                closeWorkoutMenu();
                 openEditModal(editingWorkoutIndex);
             }
-            closeWorkoutMenu();
         });
     }
     
@@ -177,8 +213,8 @@ function setupWorkoutMenu() {
         copyBtn.addEventListener('click', () => {
             if (editingWorkoutIndex !== null) {
                 copyWorkout(editingWorkoutIndex);
+                closeWorkoutMenu();
             }
-            closeWorkoutMenu();
         });
     }
     
@@ -187,8 +223,8 @@ function setupWorkoutMenu() {
             if (editingWorkoutIndex !== null && confirm('Удалить тренировку?')) {
                 workouts.splice(editingWorkoutIndex, 1);
                 saveWorkouts();
+                closeWorkoutMenu();
             }
-            closeWorkoutMenu();
         });
     }
     
@@ -210,16 +246,6 @@ function showWorkoutMenu(button, index) {
     menu.style.position = 'fixed';
     menu.style.top = rect.bottom + 5 + 'px';
     menu.style.right = (window.innerWidth - rect.right) + 'px';
-    
-    setTimeout(() => {
-        const closeHandler = () => {
-            closeWorkoutMenu();
-            document.removeEventListener('click', closeHandler);
-        };
-        setTimeout(() => {
-            document.addEventListener('click', closeHandler);
-        }, 10);
-    }, 10);
 }
 
 function closeWorkoutMenu() {
@@ -255,7 +281,6 @@ function openEditModal(index) {
     if (nameInput) nameInput.value = workout.name;
     if (daySelect) daySelect.value = workout.day;
     
-    // Сохраняем старый обработчик
     const oldConfirmHandler = confirmBtn.onclick;
     
     confirmBtn.onclick = () => {
@@ -267,7 +292,6 @@ function openEditModal(index) {
             workouts[index].day = newDay;
             saveWorkouts();
             if (modal) modal.style.display = 'none';
-            // Восстанавливаем старый обработчик
             confirmBtn.onclick = oldConfirmHandler;
         } else {
             alert('Введите название тренировки');
@@ -341,6 +365,7 @@ function hideSplashScreen() {
 // ==================== ФУНКЦИИ НАВИГАЦИИ ====================
 
 function setupNavigation() {
+    // Назад из списка тренировок в календарь
     const backBtn = document.getElementById('back-to-calendar-btn');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
@@ -348,8 +373,28 @@ function setupNavigation() {
         });
     }
     
+    // Назад из деталей тренировки в список тренировок
+    const backToWorkoutListBtn = document.getElementById('back-to-workout-list-btn');
+    if (backToWorkoutListBtn) {
+        backToWorkoutListBtn.addEventListener('click', () => {
+            showPage('workout');
+        });
+    }
+    
+    // Кнопка "Выбери упражнение" (пока без функционала)
+    const addExerciseBtn = document.getElementById('add-exercise-btn');
+    if (addExerciseBtn) {
+        addExerciseBtn.addEventListener('click', () => {
+            alert('Функционал добавления упражнений в разработке');
+        });
+    }
+    
+    // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
-        if (currentPage !== 'calendar') {
+        if (currentPage === 'workout-detail') {
+            e.preventDefault();
+            showPage('workout');
+        } else if (currentPage === 'workout') {
             e.preventDefault();
             showPage('calendar');
         }
@@ -403,48 +448,33 @@ function updateActiveNav(activeId) {
 function showPage(pageName) {
     const pageCalendar = document.getElementById('page-calendar');
     const pageWorkout = document.getElementById('page-workout');
+    const pageWorkoutDetail = document.getElementById('page-workout-detail');
     
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
         if (pageWorkout) pageWorkout.style.display = 'none';
+        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
         currentPage = 'calendar';
         updateActiveNav('nav-training');
     } else if (pageName === 'workout') {
         if (pageCalendar) pageCalendar.style.display = 'none';
         if (pageWorkout) pageWorkout.style.display = 'block';
+        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
         currentPage = 'workout';
         updateActiveNav('nav-training');
         renderWorkoutsList();
+    } else if (pageName === 'workout-detail') {
+        if (pageCalendar) pageCalendar.style.display = 'none';
+        if (pageWorkout) pageWorkout.style.display = 'none';
+        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'block';
+        currentPage = 'workout-detail';
+        updateActiveNav('nav-training');
     }
 }
 
 function openWorkoutPage(date) {
     selectedDate = date;
-    
-    const dateTitle = document.getElementById('workout-date-title');
-    const selectedDateDisplay = document.getElementById('selected-date-display');
-    
-    if (dateTitle) {
-        dateTitle.textContent = formatDateForTitle(date);
-    }
-    
-    if (selectedDateDisplay) {
-        selectedDateDisplay.textContent = formatDateForDisplay(date);
-    }
-    
     showPage('workout');
-}
-
-function formatDateForTitle(date) {
-    const dateObj = new Date(date);
-    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    return `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]}`;
-}
-
-function formatDateForDisplay(date) {
-    const dateObj = new Date(date);
-    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-    return `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
 }
 
 // ==================== МОДАЛЬНОЕ ОКНО ====================
@@ -465,7 +495,6 @@ function setupModal() {
                 const daySelect = document.getElementById('workout-day');
                 if (daySelect) daySelect.value = 'any';
                 
-                // Восстанавливаем обработчик для создания
                 confirmBtn.onclick = () => {
                     const name = workoutName ? workoutName.value.trim() : '';
                     const daySelect = document.getElementById('workout-day');
@@ -536,234 +565,4 @@ function setInitialPositionToCurrentMonth() {
     }
 }
 
-function getWeeksInMonth(year, month) {
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    
-    let startDay = firstDay.getDay();
-    startDay = startDay === 0 ? 6 : startDay - 1;
-    
-    const daysInMonth = lastDay.getDate();
-    const totalDays = startDay + daysInMonth;
-    const weeks = Math.ceil(totalDays / 7);
-    
-    return weeks;
-}
-
-function calculateWindowHeightForMonth(year, month) {
-    const weeks = getWeeksInMonth(year, month);
-    
-    const weekdaysHeight = 45;
-    const dayCellHeight = 48;
-    const padding = 16;
-    
-    const height = weekdaysHeight + (weeks * dayCellHeight) + padding;
-    
-    return height;
-}
-
-function adjustWindowHeight() {
-    const scrollContainer = document.getElementById('calendar-scroll');
-    const calendarWindow = document.getElementById('calendar-window');
-    
-    if (!scrollContainer || !calendarWindow) return;
-    
-    const scrollTop = scrollContainer.scrollTop;
-    let centerMonth = null;
-    
-    for (let i = 0; i < monthsData.length; i++) {
-        const monthElement = monthsData[i].element;
-        const offsetTop = monthElement.offsetTop;
-        const offsetBottom = offsetTop + monthElement.offsetHeight;
-        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
-        
-        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
-            centerMonth = monthsData[i];
-            break;
-        }
-    }
-    
-    if (centerMonth) {
-        const height = calculateWindowHeightForMonth(centerMonth.year, centerMonth.month);
-        calendarWindow.style.height = height + 'px';
-    }
-}
-
-function generateYearMonths(year) {
-    const monthsContainer = document.getElementById('calendar-months');
-    if (!monthsContainer) return;
-    
-    monthsContainer.innerHTML = '';
-    monthsData = [];
-    
-    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    
-    for (let month = 0; month < 12; month++) {
-        const monthContainer = document.createElement('div');
-        monthContainer.className = 'month-container';
-        monthContainer.id = `month-${year}-${month}`;
-        
-        const calendarDiv = document.createElement('div');
-        calendarDiv.className = 'calendar';
-        
-        const weekdaysDiv = document.createElement('div');
-        weekdaysDiv.className = 'calendar-weekdays';
-        const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-        weekdays.forEach(day => {
-            const dayDiv = document.createElement('div');
-            dayDiv.textContent = day;
-            weekdaysDiv.appendChild(dayDiv);
-        });
-        
-        const daysDiv = document.createElement('div');
-        daysDiv.className = 'calendar-days';
-        
-        generateMonthDays(year, month, daysDiv);
-        
-        calendarDiv.appendChild(weekdaysDiv);
-        calendarDiv.appendChild(daysDiv);
-        monthContainer.appendChild(calendarDiv);
-        monthsContainer.appendChild(monthContainer);
-        
-        monthsData.push({
-            year: year,
-            month: month,
-            element: monthContainer,
-            weeksCount: getWeeksInMonth(year, month)
-        });
-    }
-    
-    updateMonthHeader();
-    
-    setTimeout(() => {
-        adjustWindowHeight();
-    }, 50);
-}
-
-function generateMonthDays(year, month, container) {
-    const firstDayOfMonth = new Date(year, month, 1);
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-    
-    let startDay = firstDayOfMonth.getDay();
-    startDay = startDay === 0 ? 6 : startDay - 1;
-    
-    container.innerHTML = '';
-    
-    for (let i = 0; i < startDay; i++) {
-        const emptyDay = document.createElement('div');
-        emptyDay.className = 'calendar-day empty';
-        emptyDay.textContent = '';
-        container.appendChild(emptyDay);
-    }
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.textContent = day;
-        
-        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        
-        if (day === today.getDate() && 
-            month === today.getMonth() && 
-            year === today.getFullYear()) {
-            dayElement.classList.add('today');
-        }
-        
-        dayElement.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openWorkoutPage(dateStr);
-        });
-        
-        container.appendChild(dayElement);
-    }
-}
-
-function updateMonthHeader() {
-    const scrollContainer = document.getElementById('calendar-scroll');
-    if (!scrollContainer) return;
-    
-    const monthHeader = document.getElementById('current-month');
-    if (!monthHeader) return;
-    
-    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    
-    const scrollTop = scrollContainer.scrollTop;
-    let currentMonth = null;
-    let closestDistance = Infinity;
-    
-    for (let i = 0; i < monthsData.length; i++) {
-        const monthElement = monthsData[i].element;
-        const offsetTop = monthElement.offsetTop;
-        const offsetBottom = offsetTop + monthElement.offsetHeight;
-        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
-        
-        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
-            currentMonth = monthsData[i];
-            break;
-        }
-        
-        const distanceToTop = Math.abs(viewportCenter - offsetTop);
-        const distanceToBottom = Math.abs(viewportCenter - offsetBottom);
-        const minDistance = Math.min(distanceToTop, distanceToBottom);
-        
-        if (minDistance < closestDistance) {
-            closestDistance = minDistance;
-            currentMonth = monthsData[i];
-        }
-    }
-    
-    if (currentMonth) {
-        monthHeader.textContent = `${monthNames[currentMonth.month]} ${currentMonth.year}`;
-        adjustWindowHeight();
-    }
-}
-
-function scrollToCurrentMonth() {
-    const scrollContainer = document.getElementById('calendar-scroll');
-    if (!scrollContainer) return;
-    
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-    
-    const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
-    if (monthElement) {
-        const monthElementTop = monthElement.offsetTop;
-        const scrollContainerHeight = scrollContainer.clientHeight;
-        const monthElementHeight = monthElement.offsetHeight;
-        
-        const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
-        
-        scrollContainer.scrollTo({
-            top: Math.max(0, scrollTo),
-            behavior: 'smooth'
-        });
-        
-        setTimeout(() => {
-            updateMonthHeader();
-        }, 300);
-    }
-}
-
-// Добавляем обработчик скролла
-setTimeout(() => {
-    const scrollContainer = document.getElementById('calendar-scroll');
-    if (scrollContainer) {
-        scrollContainer.addEventListener('scroll', () => {
-            updateMonthHeader();
-        });
-    }
-}, 200);
-
-// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
+function getW
