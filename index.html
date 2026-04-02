@@ -48,14 +48,55 @@
                         <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
                     </svg>
                 </button>
-                <h2 id="workout-date-title">Тренировка</h2>
-                <div style="width: 40px;"></div>
+                <h2 id="workout-date-title">Создай тренировку</h2>
+                <button id="add-workout-btn" class="add-workout-btn" title="Добавить тренировку">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
+                    </svg>
+                </button>
             </div>
             <div class="workout-content">
-                <div class="workout-placeholder">
-                    <p>Тренировка на <span id="selected-date-display"></span></p>
-                    <p style="margin-top: 20px; color: #888;">Функционал в разработке</p>
+                <div id="workouts-list" class="workouts-list">
+                    <!-- Список тренировок будет здесь -->
                 </div>
+                <div id="empty-workouts" class="workout-placeholder">
+                    <p>Нет созданных тренировок</p>
+                    <p style="margin-top: 20px; color: #888;">Нажмите + чтобы создать тренировку</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ СОЗДАНИЯ ТРЕНИРОВКИ -->
+    <div id="workout-modal" class="modal">
+        <div class="modal-content">
+            <h3>Создать тренировку</h3>
+            
+            <div class="modal-field">
+                <label>Имя тренировки</label>
+                <input type="text" id="workout-name" placeholder="Например: Руки и спина" maxlength="50">
+            </div>
+            
+            <div class="modal-field">
+                <label>День тренировки</label>
+                <div class="day-selector">
+                    <select id="workout-day">
+                        <option value="any">Любой день</option>
+                        <option value="monday">Понедельник</option>
+                        <option value="tuesday">Вторник</option>
+                        <option value="wednesday">Среда</option>
+                        <option value="thursday">Четверг</option>
+                        <option value="friday">Пятница</option>
+                        <option value="saturday">Суббота</option>
+                        <option value="sunday">Воскресенье</option>
+                    </select>
+                </div>
+                <p class="hint">Выберите "Любой день", если тренировка не привязана к конкретному дню</p>
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="cancel-workout-btn" class="modal-cancel-btn">Отмена</button>
+                <button id="confirm-workout-btn" class="modal-confirm-btn">Принять</button>
             </div>
         </div>
     </div>
