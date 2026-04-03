@@ -104,19 +104,31 @@
     <div id="page-exercises" class="page" style="display: none;">
         <div class="exercises-container">
             <div class="exercises-header">
+                <button id="back-to-main-from-exercises" class="back-btn" title="Назад">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
+                    </svg>
+                </button>
                 <h2>Упражнения</h2>
+                <div style="width: 40px;"></div>
             </div>
-            <div class="exercises-categories">
-                <div class="category-card" data-category="triceps">
-                    <img src="assets/icon-exercises-triceps.png" alt="Трицепс" class="category-icon">
+            <div class="exercises-grid">
+                <div class="exercise-category" data-category="triceps">
+                    <div class="category-icon">
+                        <img src="assets/icon-exercises-triceps.png" alt="Трицепс">
+                    </div>
                     <span class="category-name">Трицепс</span>
                 </div>
-                <div class="category-card" data-category="chest">
-                    <img src="assets/icon-exercises-chest.png" alt="Грудь" class="category-icon">
-                    <span class="category-name">Грудь</span>
+                <div class="exercise-category" data-category="chest">
+                    <div class="category-icon">
+                        <img src="assets/icon-exercises-chest.png" alt="Грудные">
+                    </div>
+                    <span class="category-name">Грудные</span>
                 </div>
-                <div class="category-card" data-category="shoulder">
-                    <img src="assets/icon-exercises-shoulder.png" alt="Плечи" class="category-icon">
+                <div class="exercise-category" data-category="shoulder">
+                    <div class="category-icon">
+                        <img src="assets/icon-exercises-shoulder.png" alt="Плечи">
+                    </div>
                     <span class="category-name">Плечи</span>
                 </div>
             </div>
@@ -199,4 +211,4 @@
 
     <script src="script.js"></script>
 </body>
-                            </html>
+</html>
