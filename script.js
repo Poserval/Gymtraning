@@ -382,11 +382,23 @@ function setupNavigation() {
         });
     }
     
+    // Обработчики для карточек категорий упражнений
+    const categoryCards = document.querySelectorAll('.category-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const category = card.dataset.category;
+            alert(`Страница упражнений для категории "${card.querySelector('.category-name').textContent}" в разработке`);
+        });
+    });
+    
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
             e.preventDefault();
             showPage('workout');
         } else if (currentPage === 'workout') {
+            e.preventDefault();
+            showPage('calendar');
+        } else if (currentPage === 'exercises') {
             e.preventDefault();
             showPage('calendar');
         }
@@ -407,7 +419,7 @@ function setupBottomNav() {
     
     if (navExercises) {
         navExercises.addEventListener('click', () => {
-            alert('Страница упражнений в разработке');
+            showPage('exercises');
             updateActiveNav('nav-exercises');
         });
     }
@@ -441,17 +453,20 @@ function showPage(pageName) {
     const pageCalendar = document.getElementById('page-calendar');
     const pageWorkout = document.getElementById('page-workout');
     const pageWorkoutDetail = document.getElementById('page-workout-detail');
+    const pageExercises = document.getElementById('page-exercises');
     
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
         if (pageWorkout) pageWorkout.style.display = 'none';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
+        if (pageExercises) pageExercises.style.display = 'none';
         currentPage = 'calendar';
         updateActiveNav('nav-training');
     } else if (pageName === 'workout') {
         if (pageCalendar) pageCalendar.style.display = 'none';
         if (pageWorkout) pageWorkout.style.display = 'block';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
+        if (pageExercises) pageExercises.style.display = 'none';
         currentPage = 'workout';
         updateActiveNav('nav-training');
         renderWorkoutsList();
@@ -459,7 +474,15 @@ function showPage(pageName) {
         if (pageCalendar) pageCalendar.style.display = 'none';
         if (pageWorkout) pageWorkout.style.display = 'none';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'block';
+        if (pageExercises) pageExercises.style.display = 'none';
         currentPage = 'workout-detail';
+    } else if (pageName === 'exercises') {
+        if (pageCalendar) pageCalendar.style.display = 'none';
+        if (pageWorkout) pageWorkout.style.display = 'none';
+        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
+        if (pageExercises) pageExercises.style.display = 'block';
+        currentPage = 'exercises';
+        updateActiveNav('nav-exercises');
     }
 }
 
