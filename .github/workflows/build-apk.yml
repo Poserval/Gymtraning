@@ -1,55 +1,53 @@
-name: Build APK
+name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Install Capacitor
-        run: npm install
-
-      - name: Install Android dependencies
-        run: npx cap add android
-
-      - name: Sync Capacitor
-        run: npx cap sync
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: 'platforms;android-33 build-tools;33.0.0'
-
-      - name: Build APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: gym-training-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          compression-level: 0
-          overwrite: true
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Clean previous build
+      run: rm -rf capacitor-web android
+      
+    - name: Install dependencies
+      run: npm install --package-lock=false
+      
+    - name: Build web assets
+      run: |
+        mkdir -p capacitor-web
+        cp index.html style.css script.js manifest.json capacitor-web/
+        cp -r assets capacitor-web/assets/
+        
+    - name: Generate Android project
+      run: npx cap add android && npx cap sync android
+      
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Build Debug APK
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon
+        
+    - name: Upload APK to Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: gym-training-apk
+        path: android/app/build/outputs/apk/debug/*.apk
+        retention-days: 30
