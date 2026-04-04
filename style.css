@@ -669,23 +669,20 @@ body::after {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 20px 16px 80px 16px;
     position: relative;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .exercises-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding: 10px 0;
+    padding: 16px 16px 12px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    position: sticky;
-    top: 0;
     background: rgba(10, 10, 10, 0.95);
     backdrop-filter: blur(10px);
     z-index: 10;
+    flex-shrink: 0;
 }
 
 .exercises-header h2 {
@@ -698,7 +695,9 @@ body::after {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
+    padding: 0 16px;
 }
 
 .exercises-grid {
@@ -707,20 +706,16 @@ body::after {
     justify-content: center;
     align-items: center;
     gap: 20px;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     flex-wrap: wrap;
 }
 
-.exercises-grid:first-of-type {
-    margin-top: 10px;
-}
-
-.exercises-grid:last-of-type {
+.exercises-grid:last-child {
     margin-bottom: 0;
 }
 
 .exercise-category {
-    width: 120px;
+    width: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -733,8 +728,8 @@ body::after {
 }
 
 .category-icon {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     background: rgba(30, 30, 30, 0.8);
     backdrop-filter: blur(10px);
     border-radius: 24px;
@@ -760,11 +755,95 @@ body::after {
 }
 
 .category-name {
-    margin-top: 12px;
-    font-size: 14px;
+    margin-top: 10px;
+    font-size: 13px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.8);
     text-align: center;
+}
+
+/* ========== СТРАНИЦА ДЕТАЛЕЙ УПРАЖНЕНИЙ ========== */
+.exercises-detail-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.exercises-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 16px 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.exercises-detail-header h2 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.detail-action-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.detail-action-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.exercises-detail-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.exercises-detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.empty-exercises-detail {
+    text-align: center;
+    padding: 40px;
+    background: rgba(30, 30, 30, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: auto;
+}
+
+.empty-exercises-detail p {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.empty-exercises-detail p:first-child {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ff9800;
 }
 
 /* ========== МОДАЛЬНОЕ ОКНО ========== */
@@ -1027,35 +1106,42 @@ body::after {
     }
     
     /* Мобильные настройки страницы упражнений */
-    .exercises-header {
-        margin-bottom: 20px;
-    }
-    
     .exercises-header h2 {
         font-size: 18px;
     }
     
-    .exercises-grid {
-        gap: 15px;
-        margin-bottom: 20px;
+    .exercises-content {
+        padding: 0 12px;
     }
     
-    .exercises-grid:first-of-type {
-        margin-top: 5px;
+    .exercises-grid {
+        gap: 15px;
+        margin-bottom: 25px;
     }
     
     .exercise-category {
-        width: 100px;
+        width: 85px;
     }
     
     .category-icon {
-        width: 100px;
-        height: 100px;
+        width: 85px;
+        height: 85px;
+        border-radius: 20px;
     }
     
     .category-name {
-        font-size: 12px;
+        font-size: 11px;
         margin-top: 8px;
+    }
+    
+    /* Мобильные настройки страницы деталей упражнений */
+    .exercises-detail-header h2 {
+        font-size: 18px;
+    }
+    
+    .detail-action-btn svg {
+        width: 20px;
+        height: 20px;
     }
     
     .detail-header h2 {
