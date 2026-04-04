@@ -382,7 +382,6 @@ function setupNavigation() {
         });
     }
     
-    // Кнопка назад со страницы упражнений
     const backToMainFromExercises = document.getElementById('back-to-main-from-exercises');
     if (backToMainFromExercises) {
         backToMainFromExercises.addEventListener('click', () => {
@@ -390,7 +389,7 @@ function setupNavigation() {
         });
     }
     
-    // Обработка нажатий на категории упражнений
+    // Обработка нажатий на категории упражнений (все ряды)
     const exerciseCategories = document.querySelectorAll('.exercise-category');
     exerciseCategories.forEach(category => {
         category.addEventListener('click', () => {
