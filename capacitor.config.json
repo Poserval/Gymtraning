@@ -1,8 +1,7 @@
 {
   "appId": "com.gym.training",
   "appName": "Gym Training",
-  "webDir": ".",
-  "bundledWebRuntime": false,
+  "webDir": "capacitor-web",
   "server": {
     "androidScheme": "https"
   }
