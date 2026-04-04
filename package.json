@@ -1,14 +1,12 @@
 {
   "name": "gym-training",
   "version": "1.0.0",
-  "description": "Gym Training App - трекер тренировок",
+  "description": "Gym Training App",
   "main": "index.html",
   "scripts": {
     "build": "echo 'Build completed'",
     "capacitor:add": "npx cap add android",
-    "capacitor:sync": "npx cap sync",
-    "capacitor:copy": "npx cap copy",
-    "capacitor:open": "npx cap open android"
+    "capacitor:sync": "npx cap sync"
   },
   "author": "",
   "license": "MIT",
