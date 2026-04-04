@@ -12,6 +12,13 @@ let editingWorkoutIndex = null;
 let dragStartIndex = null;
 let currentWorkoutIndex = null;
 
+// Элементы страниц
+const pageCalendar = document.getElementById('page-calendar');
+const pageWorkout = document.getElementById('page-workout');
+const pageWorkoutDetail = document.getElementById('page-workout-detail');
+const pageExercises = document.getElementById('page-exercises');
+const pageTriceps = document.getElementById('page-triceps');
+
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
     loadWorkouts();
@@ -401,21 +408,6 @@ function setupNavigation() {
         });
     }
     
-    // Обработка нажатий на категории упражнений
-    const exerciseCategories = document.querySelectorAll('.exercise-category');
-    exerciseCategories.forEach(category => {
-        category.addEventListener('click', () => {
-            const categoryName = category.querySelector('.category-name')?.textContent || '';
-            const categoryData = category.getAttribute('data-category');
-            
-            if (categoryData === 'triceps') {
-                showPage('triceps');
-            } else {
-                alert(`Упражнения для ${categoryName} в разработке`);
-            }
-        });
-    });
-    
     // Кнопки Трицепс (пока без функционала)
     const addTricepsBtn = document.getElementById('add-triceps-exercise-btn');
     if (addTricepsBtn) {
@@ -430,6 +422,21 @@ function setupNavigation() {
             alert('Функционал сортировки в разработке');
         });
     }
+    
+    // Обработка нажатий на категории упражнений
+    const exerciseCategories = document.querySelectorAll('.exercise-category');
+    exerciseCategories.forEach(category => {
+        category.addEventListener('click', () => {
+            const categoryData = category.getAttribute('data-category');
+            
+            if (categoryData === 'triceps') {
+                showPage('triceps');
+            } else {
+                const categoryName = category.querySelector('.category-name')?.textContent || '';
+                alert(`Упражнения для ${categoryName} в разработке`);
+            }
+        });
+    });
     
     // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
@@ -494,12 +501,6 @@ function updateActiveNav(activeId) {
 }
 
 function showPage(pageName) {
-    const pageCalendar = document.getElementById('page-calendar');
-    const pageWorkout = document.getElementById('page-workout');
-    const pageWorkoutDetail = document.getElementById('page-workout-detail');
-    const pageExercises = document.getElementById('page-exercises');
-    const pageTriceps = document.getElementById('page-triceps');
-    
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
         if (pageWorkout) pageWorkout.style.display = 'none';
