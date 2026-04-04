@@ -245,8 +245,25 @@
                 </div>
             </div>
             <div class="exercises-detail-content">
-                <div id="triceps-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-triceps" class="empty-exercises-detail">
+                <div id="triceps-exercises-list" class="exercises-detail-list">
+                    <!-- Пример вкладки упражнения -->
+                    <div class="exercise-item">
+                        <div class="exercise-item-left">
+                            <div class="exercise-image-placeholder"></div>
+                        </div>
+                        <div class="exercise-item-center">
+                            <span class="exercise-item-name">Жим от брусьев</span>
+                        </div>
+                        <div class="exercise-item-right">
+                            <button class="exercise-favorite-btn" data-favorite="false">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="none" stroke="white" stroke-width="1.5"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="empty-triceps" class="empty-exercises-detail" style="display: none;">
                     <p>Нет упражнений для трицепса</p>
                     <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
                 </div>
@@ -254,78 +271,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО -->
-    <div id="workout-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title">Создать тренировку</h3>
-            <div class="modal-field">
-                <label>Имя тренировки</label>
-                <input type="text" id="workout-name" placeholder="Например: Руки и спина" maxlength="50">
-            </div>
-            <div class="modal-field">
-                <label>День тренировки</label>
-                <div class="day-selector">
-                    <select id="workout-day">
-                        <option value="any">Любой день</option>
-                        <option value="monday">Понедельник</option>
-                        <option value="tuesday">Вторник</option>
-                        <option value="wednesday">Среда</option>
-                        <option value="thursday">Четверг</option>
-                        <option value="friday">Пятница</option>
-                        <option value="saturday">Суббота</option>
-                        <option value="sunday">Воскресенье</option>
-                    </select>
-                </div>
-                <p class="hint">Выберите "Любой день", если тренировка не привязана к конкретному дню</p>
-            </div>
-            <div class="modal-buttons">
-                <button id="cancel-workout-btn" class="modal-cancel-btn">Отмена</button>
-                <button id="confirm-workout-btn" class="modal-confirm-btn">Принять</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- МЕНЮ ДЛЯ КАРТОЧКИ -->
-    <div id="workout-menu" class="workout-menu">
-        <div class="workout-menu-content">
-            <button id="menu-edit" class="menu-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white"/>
-                </svg>
-                <span>Изменить</span>
-            </button>
-            <button id="menu-copy" class="menu-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="white"/>
-                </svg>
-                <span>Копия</span>
-            </button>
-            <button id="menu-delete" class="menu-item menu-delete">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
-                </svg>
-                <span>Удалить</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- НИЖНЯЯ ПАНЕЛЬ -->
-    <div class="bottom-nav">
-        <button class="nav-btn" id="nav-training" data-page="workout">
-            <img src="assets/icon-training-button.png" alt="Тренировка" class="nav-icon">
-            <span class="nav-label">Тренировка</span>
-        </button>
-        <button class="nav-btn" id="nav-exercises" data-page="exercises">
-            <img src="assets/icon-exercises-button.png" alt="Упражнения" class="nav-icon">
-            <span class="nav-label">Упражнения</span>
-        </button>
-        <button class="nav-btn" id="nav-progress" data-page="progress">
-            <img src="assets/icon-progress-button.png" alt="Прогресс" class="nav-icon">
-            <span class="nav-label">Прогресс</span>
-        </button>
-    </div>
-
-        <!-- СТРАНИЦА 6: ГРУДНЫЕ -->
+    <!-- СТРАНИЦА 6: ГРУДНЫЕ -->
     <div id="page-chest" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -654,7 +600,78 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- МОДАЛЬНОЕ ОКНО -->
+    <div id="workout-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Создать тренировку</h3>
+            <div class="modal-field">
+                <label>Имя тренировки</label>
+                <input type="text" id="workout-name" placeholder="Например: Руки и спина" maxlength="50">
+            </div>
+            <div class="modal-field">
+                <label>День тренировки</label>
+                <div class="day-selector">
+                    <select id="workout-day">
+                        <option value="any">Любой день</option>
+                        <option value="monday">Понедельник</option>
+                        <option value="tuesday">Вторник</option>
+                        <option value="wednesday">Среда</option>
+                        <option value="thursday">Четверг</option>
+                        <option value="friday">Пятница</option>
+                        <option value="saturday">Суббота</option>
+                        <option value="sunday">Воскресенье</option>
+                    </select>
+                </div>
+                <p class="hint">Выберите "Любой день", если тренировка не привязана к конкретному дню</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-workout-btn" class="modal-cancel-btn">Отмена</button>
+                <button id="confirm-workout-btn" class="modal-confirm-btn">Принять</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МЕНЮ ДЛЯ КАРТОЧКИ -->
+    <div id="workout-menu" class="workout-menu">
+        <div class="workout-menu-content">
+            <button id="menu-edit" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white"/>
+                </svg>
+                <span>Изменить</span>
+            </button>
+            <button id="menu-copy" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="white"/>
+                </svg>
+                <span>Копия</span>
+            </button>
+            <button id="menu-delete" class="menu-item menu-delete">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
+                </svg>
+                <span>Удалить</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- НИЖНЯЯ ПАНЕЛЬ -->
+    <div class="bottom-nav">
+        <button class="nav-btn" id="nav-training" data-page="workout">
+            <img src="assets/icon-training-button.png" alt="Тренировка" class="nav-icon">
+            <span class="nav-label">Тренировка</span>
+        </button>
+        <button class="nav-btn" id="nav-exercises" data-page="exercises">
+            <img src="assets/icon-exercises-button.png" alt="Упражнения" class="nav-icon">
+            <span class="nav-label">Упражнения</span>
+        </button>
+        <button class="nav-btn" id="nav-progress" data-page="progress">
+            <img src="assets/icon-progress-button.png" alt="Прогресс" class="nav-icon">
+            <span class="nav-label">Прогресс</span>
+        </button>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
