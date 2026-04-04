@@ -11,6 +11,7 @@ let workouts = [];
 let editingWorkoutIndex = null;
 let dragStartIndex = null;
 let currentWorkoutIndex = null;
+let currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
 
 // Элементы страниц
 const pageCalendar = document.getElementById('page-calendar');
@@ -28,6 +29,7 @@ const pageUpperlegs = document.getElementById('page-upperlegs');
 const pageGlutes = document.getElementById('page-glutes');
 const pageCardio = document.getElementById('page-cardio');
 const pageLowerlegs = document.getElementById('page-lowerlegs');
+const pageExerciseDetail = document.getElementById('page-exercise-detail');
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
@@ -39,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupModal();
     setupWorkoutMenu();
     setupFavoriteButtons();
+    setupExerciseDetail();
 });
 
 // ==================== РАБОТА С ТРЕНИРОВКАМИ ====================
@@ -411,11 +414,19 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Трицепс
+    // Назад со страницы Трицепс на страницу упражнений
     const backToExercisesFromTriceps = document.getElementById('back-to-exercises-from-triceps');
     if (backToExercisesFromTriceps) {
         backToExercisesFromTriceps.addEventListener('click', () => {
             showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы деталей упражнения на страницу Трицепс
+    const backToTricepsFromDetail = document.getElementById('back-to-triceps-from-detail');
+    if (backToTricepsFromDetail) {
+        backToTricepsFromDetail.addEventListener('click', () => {
+            showPage('triceps');
         });
     }
     
@@ -536,6 +547,16 @@ function setupNavigation() {
         });
     });
     
+    // Обработка нажатий на вкладки упражнений (открытие детальной страницы)
+    const exerciseItems = document.querySelectorAll('.exercise-item');
+    exerciseItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const exerciseName = item.querySelector('.exercise-item-name')?.textContent || 'Упражнение';
+            const exerciseImg = item.querySelector('.exercise-image')?.src || '';
+            openExerciseDetail(exerciseName, exerciseImg);
+        });
+    });
+    
     // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
@@ -547,6 +568,12 @@ function setupNavigation() {
         } else if (currentPage === 'exercises') {
             e.preventDefault();
             showPage('calendar');
+        } else if (currentPage === 'triceps') {
+            e.preventDefault();
+            showPage('exercises');
+        } else if (currentPage === 'exercise-detail') {
+            e.preventDefault();
+            showPage('triceps');
         } else if (currentPage !== 'calendar') {
             e.preventDefault();
             showPage('exercises');
@@ -615,6 +642,7 @@ function showPage(pageName) {
     if (pageGlutes) pageGlutes.style.display = 'none';
     if (pageCardio) pageCardio.style.display = 'none';
     if (pageLowerlegs) pageLowerlegs.style.display = 'none';
+    if (pageExerciseDetail) pageExerciseDetail.style.display = 'none';
     
     // Показываем нужную страницу
     if (pageName === 'calendar') {
@@ -666,12 +694,29 @@ function showPage(pageName) {
     } else if (pageName === 'lowerlegs') {
         if (pageLowerlegs) pageLowerlegs.style.display = 'block';
         currentPage = 'lowerlegs';
+    } else if (pageName === 'exercise-detail') {
+        if (pageExerciseDetail) pageExerciseDetail.style.display = 'block';
+        currentPage = 'exercise-detail';
     }
 }
 
 function openWorkoutPage(date) {
     selectedDate = date;
     showPage('workout');
+}
+
+function openExerciseDetail(name, imgSrc) {
+    const detailName = document.getElementById('exercise-detail-name');
+    const detailImg = document.getElementById('exercise-detail-img');
+    
+    if (detailName) detailName.textContent = name;
+    if (detailImg) detailImg.src = imgSrc;
+    
+    // Сбрасываем сеты
+    currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
+    renderSets();
+    
+    showPage('exercise-detail');
 }
 
 // ==================== ФУНКЦИИ ИЗБРАННОГО ====================
@@ -700,6 +745,60 @@ function setupFavoriteButtons() {
                 }
             }
         });
+    });
+}
+
+// ==================== ФУНКЦИИ ДЕТАЛЬНОГО ПРОСМОТРА УПРАЖНЕНИЯ ====================
+
+function setupExerciseDetail() {
+    const addSetBtn = document.getElementById('add-set-btn');
+    if (addSetBtn) {
+        addSetBtn.addEventListener('click', () => {
+            const newSetNumber = currentSets.length + 1;
+            currentSets.push({ set: newSetNumber, kg: 0, reps: 0, completed: false });
+            renderSets();
+        });
+    }
+}
+
+function renderSets() {
+    const setsList = document.getElementById('sets-list');
+    if (!setsList) return;
+    
+    setsList.innerHTML = currentSets.map((set, index) => `
+        <div class="set-row" data-index="${index}">
+            <div class="set-number">${set.set}</div>
+            <input type="number" class="set-input set-kg" value="${set.kg}" placeholder="0" step="0.5">
+            <input type="number" class="set-input set-reps" value="${set.reps}" placeholder="0" step="1">
+            <div class="set-checkbox">
+                <input type="checkbox" class="set-completed" ${set.completed ? 'checked' : ''}>
+            </div>
+        </div>
+    `).join('');
+    
+    // Добавляем обработчики для всех полей
+    document.querySelectorAll('.set-row').forEach((row, idx) => {
+        const kgInput = row.querySelector('.set-kg');
+        const repsInput = row.querySelector('.set-reps');
+        const completedCheckbox = row.querySelector('.set-completed');
+        
+        if (kgInput) {
+            kgInput.addEventListener('change', (e) => {
+                currentSets[idx].kg = parseFloat(e.target.value) || 0;
+            });
+        }
+        
+        if (repsInput) {
+            repsInput.addEventListener('change', (e) => {
+                currentSets[idx].reps = parseInt(e.target.value) || 0;
+            });
+        }
+        
+        if (completedCheckbox) {
+            completedCheckbox.addEventListener('change', (e) => {
+                currentSets[idx].completed = e.target.checked;
+            });
+        }
     });
 }
 
