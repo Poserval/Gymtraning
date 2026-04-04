@@ -1,5 +1,5 @@
 {
-  "name": "gym-training",
+  "name": "gym-training", 
   "version": "1.0.0",
   "scripts": {
     "build": "mkdir -p capacitor-web && cp *.html *.css *.js *.json capacitor-web/ && cp -r assets capacitor-web/assets/",
