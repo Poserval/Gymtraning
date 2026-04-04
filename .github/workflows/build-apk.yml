@@ -33,6 +33,15 @@ jobs:
     - name: Generate Android project
       run: npx cap add android && npx cap sync android
       
+    - name: Replace launcher icons
+      run: |
+        echo "🔄 Заменяем иконки на кастомные..."
+        find android -name "ic_launcher*.png" -type f | while read file; do
+          echo "Заменяем: $file"
+          cp assets/icon-desktop-192.png "$file" 2>/dev/null || true
+        done
+        echo "✅ Иконки заменены!"
+      
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
