@@ -361,6 +361,7 @@ function hideSplashScreen() {
 // ==================== ФУНКЦИИ НАВИГАЦИИ ====================
 
 function setupNavigation() {
+    // Назад из списка тренировок в календарь
     const backBtn = document.getElementById('back-to-calendar-btn');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
@@ -368,6 +369,7 @@ function setupNavigation() {
         });
     }
     
+    // Назад из деталей тренировки в список тренировок
     const backToWorkoutListBtn = document.getElementById('back-to-workout-list-btn');
     if (backToWorkoutListBtn) {
         backToWorkoutListBtn.addEventListener('click', () => {
@@ -375,6 +377,7 @@ function setupNavigation() {
         });
     }
     
+    // Кнопка "Выбери упражнение" (пока без функционала)
     const addExerciseBtn = document.getElementById('add-exercise-btn');
     if (addExerciseBtn) {
         addExerciseBtn.addEventListener('click', () => {
@@ -382,6 +385,7 @@ function setupNavigation() {
         });
     }
     
+    // Назад со страницы упражнений на главный экран
     const backToMainFromExercises = document.getElementById('back-to-main-from-exercises');
     if (backToMainFromExercises) {
         backToMainFromExercises.addEventListener('click', () => {
@@ -389,15 +393,45 @@ function setupNavigation() {
         });
     }
     
-    // Обработка нажатий на категории упражнений (все ряды)
+    // Назад со страницы Трицепс на страницу упражнений
+    const backToExercisesFromTriceps = document.getElementById('back-to-exercises-from-triceps');
+    if (backToExercisesFromTriceps) {
+        backToExercisesFromTriceps.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Обработка нажатий на категории упражнений
     const exerciseCategories = document.querySelectorAll('.exercise-category');
     exerciseCategories.forEach(category => {
         category.addEventListener('click', () => {
             const categoryName = category.querySelector('.category-name')?.textContent || '';
-            alert(`Упражнения для ${categoryName} в разработке`);
+            const categoryData = category.getAttribute('data-category');
+            
+            if (categoryData === 'triceps') {
+                showPage('triceps');
+            } else {
+                alert(`Упражнения для ${categoryName} в разработке`);
+            }
         });
     });
     
+    // Кнопки Трицепс (пока без функционала)
+    const addTricepsBtn = document.getElementById('add-triceps-exercise-btn');
+    if (addTricepsBtn) {
+        addTricepsBtn.addEventListener('click', () => {
+            alert('Функционал добавления упражнений для трицепса в разработке');
+        });
+    }
+    
+    const sortTricepsBtn = document.getElementById('sort-triceps-btn');
+    if (sortTricepsBtn) {
+        sortTricepsBtn.addEventListener('click', () => {
+            alert('Функционал сортировки в разработке');
+        });
+    }
+    
+    // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
             e.preventDefault();
@@ -408,6 +442,9 @@ function setupNavigation() {
         } else if (currentPage === 'exercises') {
             e.preventDefault();
             showPage('calendar');
+        } else if (currentPage === 'triceps') {
+            e.preventDefault();
+            showPage('exercises');
         }
     }, false);
 }
@@ -461,12 +498,14 @@ function showPage(pageName) {
     const pageWorkout = document.getElementById('page-workout');
     const pageWorkoutDetail = document.getElementById('page-workout-detail');
     const pageExercises = document.getElementById('page-exercises');
+    const pageTriceps = document.getElementById('page-triceps');
     
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
         if (pageWorkout) pageWorkout.style.display = 'none';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
         if (pageExercises) pageExercises.style.display = 'none';
+        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'calendar';
         updateActiveNav('nav-training');
     } else if (pageName === 'workout') {
@@ -474,6 +513,7 @@ function showPage(pageName) {
         if (pageWorkout) pageWorkout.style.display = 'block';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
         if (pageExercises) pageExercises.style.display = 'none';
+        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'workout';
         updateActiveNav('nav-training');
         renderWorkoutsList();
@@ -482,14 +522,23 @@ function showPage(pageName) {
         if (pageWorkout) pageWorkout.style.display = 'none';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'block';
         if (pageExercises) pageExercises.style.display = 'none';
+        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'workout-detail';
     } else if (pageName === 'exercises') {
         if (pageCalendar) pageCalendar.style.display = 'none';
         if (pageWorkout) pageWorkout.style.display = 'none';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
         if (pageExercises) pageExercises.style.display = 'block';
+        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'exercises';
         updateActiveNav('nav-exercises');
+    } else if (pageName === 'triceps') {
+        if (pageCalendar) pageCalendar.style.display = 'none';
+        if (pageWorkout) pageWorkout.style.display = 'none';
+        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
+        if (pageExercises) pageExercises.style.display = 'none';
+        if (pageTriceps) pageTriceps.style.display = 'block';
+        currentPage = 'triceps';
     }
 }
 
