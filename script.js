@@ -18,6 +18,16 @@ const pageWorkout = document.getElementById('page-workout');
 const pageWorkoutDetail = document.getElementById('page-workout-detail');
 const pageExercises = document.getElementById('page-exercises');
 const pageTriceps = document.getElementById('page-triceps');
+const pageChest = document.getElementById('page-chest');
+const pageShoulder = document.getElementById('page-shoulder');
+const pageBiceps = document.getElementById('page-biceps');
+const pageAbs = document.getElementById('page-abs');
+const pageBack = document.getElementById('page-back');
+const pageForearms = document.getElementById('page-forearms');
+const pageUpperlegs = document.getElementById('page-upperlegs');
+const pageGlutes = document.getElementById('page-glutes');
+const pageCardio = document.getElementById('page-cardio');
+const pageLowerlegs = document.getElementById('page-lowerlegs');
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
@@ -400,7 +410,7 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Трицепс на страницу упражнений
+    // Назад со страницы Трицепс
     const backToExercisesFromTriceps = document.getElementById('back-to-exercises-from-triceps');
     if (backToExercisesFromTriceps) {
         backToExercisesFromTriceps.addEventListener('click', () => {
@@ -408,18 +418,83 @@ function setupNavigation() {
         });
     }
     
-    // Кнопки Трицепс (пока без функционала)
-    const addTricepsBtn = document.getElementById('add-triceps-exercise-btn');
-    if (addTricepsBtn) {
-        addTricepsBtn.addEventListener('click', () => {
-            alert('Функционал добавления упражнений для трицепса в разработке');
+    // Назад со страницы Грудные
+    const backToExercisesFromChest = document.getElementById('back-to-exercises-from-chest');
+    if (backToExercisesFromChest) {
+        backToExercisesFromChest.addEventListener('click', () => {
+            showPage('exercises');
         });
     }
     
-    const sortTricepsBtn = document.getElementById('sort-triceps-btn');
-    if (sortTricepsBtn) {
-        sortTricepsBtn.addEventListener('click', () => {
-            alert('Функционал сортировки в разработке');
+    // Назад со страницы Плечи
+    const backToExercisesFromShoulder = document.getElementById('back-to-exercises-from-shoulder');
+    if (backToExercisesFromShoulder) {
+        backToExercisesFromShoulder.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Бицепс
+    const backToExercisesFromBiceps = document.getElementById('back-to-exercises-from-biceps');
+    if (backToExercisesFromBiceps) {
+        backToExercisesFromBiceps.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Пресс
+    const backToExercisesFromAbs = document.getElementById('back-to-exercises-from-abs');
+    if (backToExercisesFromAbs) {
+        backToExercisesFromAbs.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Спина
+    const backToExercisesFromBack = document.getElementById('back-to-exercises-from-back');
+    if (backToExercisesFromBack) {
+        backToExercisesFromBack.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Предплечье
+    const backToExercisesFromForearms = document.getElementById('back-to-exercises-from-forearms');
+    if (backToExercisesFromForearms) {
+        backToExercisesFromForearms.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Ноги (верх)
+    const backToExercisesFromUpperlegs = document.getElementById('back-to-exercises-from-upperlegs');
+    if (backToExercisesFromUpperlegs) {
+        backToExercisesFromUpperlegs.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Ягодицы
+    const backToExercisesFromGlutes = document.getElementById('back-to-exercises-from-glutes');
+    if (backToExercisesFromGlutes) {
+        backToExercisesFromGlutes.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Кардио
+    const backToExercisesFromCardio = document.getElementById('back-to-exercises-from-cardio');
+    if (backToExercisesFromCardio) {
+        backToExercisesFromCardio.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Ноги (низ)
+    const backToExercisesFromLowerlegs = document.getElementById('back-to-exercises-from-lowerlegs');
+    if (backToExercisesFromLowerlegs) {
+        backToExercisesFromLowerlegs.addEventListener('click', () => {
+            showPage('exercises');
         });
     }
     
@@ -431,6 +506,28 @@ function setupNavigation() {
             
             if (categoryData === 'triceps') {
                 showPage('triceps');
+            } else if (categoryData === 'chest') {
+                showPage('chest');
+            } else if (categoryData === 'shoulder') {
+                showPage('shoulder');
+            } else if (categoryData === 'biceps') {
+                showPage('biceps');
+            } else if (categoryData === 'abs') {
+                showPage('abs');
+            } else if (categoryData === 'back') {
+                showPage('back');
+            } else if (categoryData === 'forearms') {
+                showPage('forearms');
+            } else if (categoryData === 'upperlegs') {
+                showPage('upperlegs');
+            } else if (categoryData === 'glutes') {
+                showPage('glutes');
+            } else if (categoryData === 'cardio') {
+                showPage('cardio');
+            } else if (categoryData === 'lowerlegs') {
+                showPage('lowerlegs');
+            } else if (categoryData === 'all') {
+                alert('Раздел "Все" в разработке');
             } else {
                 const categoryName = category.querySelector('.category-name')?.textContent || '';
                 alert(`Упражнения для ${categoryName} в разработке`);
@@ -449,7 +546,7 @@ function setupNavigation() {
         } else if (currentPage === 'exercises') {
             e.preventDefault();
             showPage('calendar');
-        } else if (currentPage === 'triceps') {
+        } else if (currentPage !== 'calendar') {
             e.preventDefault();
             showPage('exercises');
         }
@@ -501,45 +598,73 @@ function updateActiveNav(activeId) {
 }
 
 function showPage(pageName) {
+    // Скрываем все страницы
+    if (pageCalendar) pageCalendar.style.display = 'none';
+    if (pageWorkout) pageWorkout.style.display = 'none';
+    if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
+    if (pageExercises) pageExercises.style.display = 'none';
+    if (pageTriceps) pageTriceps.style.display = 'none';
+    if (pageChest) pageChest.style.display = 'none';
+    if (pageShoulder) pageShoulder.style.display = 'none';
+    if (pageBiceps) pageBiceps.style.display = 'none';
+    if (pageAbs) pageAbs.style.display = 'none';
+    if (pageBack) pageBack.style.display = 'none';
+    if (pageForearms) pageForearms.style.display = 'none';
+    if (pageUpperlegs) pageUpperlegs.style.display = 'none';
+    if (pageGlutes) pageGlutes.style.display = 'none';
+    if (pageCardio) pageCardio.style.display = 'none';
+    if (pageLowerlegs) pageLowerlegs.style.display = 'none';
+    
+    // Показываем нужную страницу
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
-        if (pageWorkout) pageWorkout.style.display = 'none';
-        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
-        if (pageExercises) pageExercises.style.display = 'none';
-        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'calendar';
         updateActiveNav('nav-training');
     } else if (pageName === 'workout') {
-        if (pageCalendar) pageCalendar.style.display = 'none';
         if (pageWorkout) pageWorkout.style.display = 'block';
-        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
-        if (pageExercises) pageExercises.style.display = 'none';
-        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'workout';
         updateActiveNav('nav-training');
         renderWorkoutsList();
     } else if (pageName === 'workout-detail') {
-        if (pageCalendar) pageCalendar.style.display = 'none';
-        if (pageWorkout) pageWorkout.style.display = 'none';
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'block';
-        if (pageExercises) pageExercises.style.display = 'none';
-        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'workout-detail';
     } else if (pageName === 'exercises') {
-        if (pageCalendar) pageCalendar.style.display = 'none';
-        if (pageWorkout) pageWorkout.style.display = 'none';
-        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
         if (pageExercises) pageExercises.style.display = 'block';
-        if (pageTriceps) pageTriceps.style.display = 'none';
         currentPage = 'exercises';
         updateActiveNav('nav-exercises');
     } else if (pageName === 'triceps') {
-        if (pageCalendar) pageCalendar.style.display = 'none';
-        if (pageWorkout) pageWorkout.style.display = 'none';
-        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
-        if (pageExercises) pageExercises.style.display = 'none';
         if (pageTriceps) pageTriceps.style.display = 'block';
         currentPage = 'triceps';
+    } else if (pageName === 'chest') {
+        if (pageChest) pageChest.style.display = 'block';
+        currentPage = 'chest';
+    } else if (pageName === 'shoulder') {
+        if (pageShoulder) pageShoulder.style.display = 'block';
+        currentPage = 'shoulder';
+    } else if (pageName === 'biceps') {
+        if (pageBiceps) pageBiceps.style.display = 'block';
+        currentPage = 'biceps';
+    } else if (pageName === 'abs') {
+        if (pageAbs) pageAbs.style.display = 'block';
+        currentPage = 'abs';
+    } else if (pageName === 'back') {
+        if (pageBack) pageBack.style.display = 'block';
+        currentPage = 'back';
+    } else if (pageName === 'forearms') {
+        if (pageForearms) pageForearms.style.display = 'block';
+        currentPage = 'forearms';
+    } else if (pageName === 'upperlegs') {
+        if (pageUpperlegs) pageUpperlegs.style.display = 'block';
+        currentPage = 'upperlegs';
+    } else if (pageName === 'glutes') {
+        if (pageGlutes) pageGlutes.style.display = 'block';
+        currentPage = 'glutes';
+    } else if (pageName === 'cardio') {
+        if (pageCardio) pageCardio.style.display = 'block';
+        currentPage = 'cardio';
+    } else if (pageName === 'lowerlegs') {
+        if (pageLowerlegs) pageLowerlegs.style.display = 'block';
+        currentPage = 'lowerlegs';
     }
 }
 
