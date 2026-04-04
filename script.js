@@ -196,6 +196,8 @@ function setupWorkoutMenu() {
     const copyBtn = document.getElementById('menu-copy');
     const deleteBtn = document.getElementById('menu-delete');
     
+    if (!menu) return;
+    
     if (editBtn) {
         editBtn.addEventListener('click', () => {
             if (editingWorkoutIndex !== null) {
@@ -220,6 +222,10 @@ function setupWorkoutMenu() {
                 workouts.splice(editingWorkoutIndex, 1);
                 saveWorkouts();
                 closeWorkoutMenu();
+                
+                if (currentPage === 'workout-detail') {
+                    showPage('workout');
+                }
             }
         });
     }
@@ -240,7 +246,13 @@ function showWorkoutMenu(button, index) {
     
     menu.style.display = 'block';
     menu.style.position = 'fixed';
-    menu.style.top = rect.bottom + 5 + 'px';
+    
+    const menuHeight = 180;
+    if (rect.bottom + menuHeight + 10 > window.innerHeight) {
+        menu.style.top = rect.top - menuHeight - 5 + 'px';
+    } else {
+        menu.style.top = rect.bottom + 5 + 'px';
+    }
     menu.style.right = (window.innerWidth - rect.right) + 'px';
 }
 
@@ -272,12 +284,14 @@ function openEditModal(index) {
     const nameInput = document.getElementById('workout-name');
     const daySelect = document.getElementById('workout-day');
     const confirmBtn = document.getElementById('confirm-workout-btn');
+    const cancelBtn = document.getElementById('cancel-workout-btn');
     
     if (modalTitle) modalTitle.textContent = 'Редактировать тренировку';
     if (nameInput) nameInput.value = workout.name;
     if (daySelect) daySelect.value = workout.day;
     
     const oldConfirmHandler = confirmBtn.onclick;
+    const oldCancelHandler = cancelBtn.onclick;
     
     confirmBtn.onclick = () => {
         const newName = nameInput ? nameInput.value.trim() : '';
@@ -289,9 +303,16 @@ function openEditModal(index) {
             saveWorkouts();
             if (modal) modal.style.display = 'none';
             confirmBtn.onclick = oldConfirmHandler;
+            cancelBtn.onclick = oldCancelHandler;
         } else {
             alert('Введите название тренировки');
         }
+    };
+    
+    cancelBtn.onclick = () => {
+        if (modal) modal.style.display = 'none';
+        confirmBtn.onclick = oldConfirmHandler;
+        cancelBtn.onclick = oldCancelHandler;
     };
     
     if (modal) modal.style.display = 'flex';
@@ -389,7 +410,6 @@ function setupNavigation() {
         });
     }
     
-    // Обработка нажатий на категории упражнений (все ряды)
     const exerciseCategories = document.querySelectorAll('.exercise-category');
     exerciseCategories.forEach(category => {
         category.addEventListener('click', () => {
@@ -508,43 +528,51 @@ function setupModal() {
     const workoutName = document.getElementById('workout-name');
     const modalTitle = document.getElementById('modal-title');
     
+    if (!modal) return;
+    
     if (addBtn) {
         addBtn.addEventListener('click', () => {
-            if (modal) {
-                if (modalTitle) modalTitle.textContent = 'Создать тренировку';
-                if (workoutName) workoutName.value = '';
+            if (modalTitle) modalTitle.textContent = 'Создать тренировку';
+            if (workoutName) workoutName.value = '';
+            const daySelect = document.getElementById('workout-day');
+            if (daySelect) daySelect.value = 'any';
+            
+            const oldConfirmHandler = confirmBtn.onclick;
+            const oldCancelHandler = cancelBtn.onclick;
+            
+            confirmBtn.onclick = () => {
+                const name = workoutName ? workoutName.value.trim() : '';
                 const daySelect = document.getElementById('workout-day');
-                if (daySelect) daySelect.value = 'any';
+                const day = daySelect ? daySelect.value : 'any';
                 
-                confirmBtn.onclick = () => {
-                    const name = workoutName ? workoutName.value.trim() : '';
-                    const daySelect = document.getElementById('workout-day');
-                    const day = daySelect ? daySelect.value : 'any';
-                    
-                    if (addWorkout(name, day)) {
-                        if (modal) modal.style.display = 'none';
-                        renderWorkoutsList();
-                    }
-                };
-                
-                modal.style.display = 'flex';
-            }
+                if (addWorkout(name, day)) {
+                    if (modal) modal.style.display = 'none';
+                    confirmBtn.onclick = oldConfirmHandler;
+                    cancelBtn.onclick = oldCancelHandler;
+                }
+            };
+            
+            cancelBtn.onclick = () => {
+                if (modal) modal.style.display = 'none';
+                confirmBtn.onclick = oldConfirmHandler;
+                cancelBtn.onclick = oldCancelHandler;
+            };
+            
+            modal.style.display = 'flex';
         });
     }
     
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-            if (modal) modal.style.display = 'none';
+            modal.style.display = 'none';
         });
     }
     
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    }
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 }
 
 // ==================== ФУНКЦИИ КАЛЕНДАРЯ ====================
@@ -806,7 +834,6 @@ function escapeHtml(str) {
     });
 }
 
-// Добавляем обработчик скролла
 setTimeout(() => {
     const scrollContainer = document.getElementById('calendar-scroll');
     if (scrollContainer) {
