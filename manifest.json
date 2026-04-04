@@ -8,6 +8,10 @@
   "theme_color": "#ff9800",
   "icons": [
     {
+      "src": "assets/icon-desktop-192.png",
+      "type": "image/png"
+    },
+    {
       "src": "assets/icon-desktop-16.png",
       "sizes": "16x16",
       "type": "image/png"
