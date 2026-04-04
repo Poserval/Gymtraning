@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupBottomNav();
     setupModal();
     setupWorkoutMenu();
+    setupFavoriteButtons();
 });
 
 // ==================== РАБОТА С ТРЕНИРОВКАМИ ====================
@@ -671,6 +672,35 @@ function showPage(pageName) {
 function openWorkoutPage(date) {
     selectedDate = date;
     showPage('workout');
+}
+
+// ==================== ФУНКЦИИ ИЗБРАННОГО ====================
+
+function setupFavoriteButtons() {
+    const favoriteBtns = document.querySelectorAll('.exercise-favorite-btn');
+    favoriteBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isFavorite = btn.getAttribute('data-favorite') === 'true';
+            btn.setAttribute('data-favorite', (!isFavorite).toString());
+            
+            if (!isFavorite) {
+                btn.classList.add('active');
+                const svgPath = btn.querySelector('svg path');
+                if (svgPath) {
+                    svgPath.setAttribute('fill', '#ff9800');
+                    svgPath.setAttribute('stroke', '#ff9800');
+                }
+            } else {
+                btn.classList.remove('active');
+                const svgPath = btn.querySelector('svg path');
+                if (svgPath) {
+                    svgPath.setAttribute('fill', 'none');
+                    svgPath.setAttribute('stroke', 'white');
+                }
+            }
+        });
+    });
 }
 
 // ==================== МОДАЛЬНОЕ ОКНО ====================
