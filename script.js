@@ -517,43 +517,41 @@ function setupNavigation() {
             const categoryData = category.getAttribute('data-category');
             
             if (categoryData === 'triceps') {
+                loadExercisesForCategory('triceps', 'triceps-exercises-list', 'empty-triceps');
                 showPage('triceps');
             } else if (categoryData === 'chest') {
+                loadExercisesForCategory('chest', 'chest-exercises-list', 'empty-chest');
                 showPage('chest');
             } else if (categoryData === 'shoulder') {
+                loadExercisesForCategory('shoulder', 'shoulder-exercises-list', 'empty-shoulder');
                 showPage('shoulder');
             } else if (categoryData === 'biceps') {
+                loadExercisesForCategory('biceps', 'biceps-exercises-list', 'empty-biceps');
                 showPage('biceps');
             } else if (categoryData === 'abs') {
+                loadExercisesForCategory('abs', 'abs-exercises-list', 'empty-abs');
                 showPage('abs');
             } else if (categoryData === 'back') {
+                loadExercisesForCategory('back', 'back-exercises-list', 'empty-back');
                 showPage('back');
             } else if (categoryData === 'forearms') {
+                loadExercisesForCategory('forearms', 'forearms-exercises-list', 'empty-forearms');
                 showPage('forearms');
             } else if (categoryData === 'upperlegs') {
+                loadExercisesForCategory('upperlegs', 'upperlegs-exercises-list', 'empty-upperlegs');
                 showPage('upperlegs');
             } else if (categoryData === 'glutes') {
+                loadExercisesForCategory('glutes', 'glutes-exercises-list', 'empty-glutes');
                 showPage('glutes');
             } else if (categoryData === 'cardio') {
+                loadExercisesForCategory('cardio', 'cardio-exercises-list', 'empty-cardio');
                 showPage('cardio');
             } else if (categoryData === 'lowerlegs') {
+                loadExercisesForCategory('lowerlegs', 'lowerlegs-exercises-list', 'empty-lowerlegs');
                 showPage('lowerlegs');
             } else if (categoryData === 'all') {
                 alert('Раздел "Все" в разработке');
-            } else {
-                const categoryName = category.querySelector('.category-name')?.textContent || '';
-                alert(`Упражнения для ${categoryName} в разработке`);
             }
-        });
-    });
-    
-    // Обработка нажатий на вкладки упражнений (открытие детальной страницы)
-    const exerciseItems = document.querySelectorAll('.exercise-item');
-    exerciseItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const exerciseName = item.querySelector('.exercise-item-name')?.textContent || 'Упражнение';
-            const exerciseImg = item.querySelector('.exercise-image')?.src || '';
-            openExerciseDetail(exerciseName, exerciseImg);
         });
     });
     
@@ -568,15 +566,19 @@ function setupNavigation() {
         } else if (currentPage === 'exercises') {
             e.preventDefault();
             showPage('calendar');
-        } else if (currentPage === 'triceps') {
+        } else if (currentPage === 'triceps' || currentPage === 'chest' || currentPage === 'shoulder' || 
+                   currentPage === 'biceps' || currentPage === 'abs' || currentPage === 'back' ||
+                   currentPage === 'forearms' || currentPage === 'upperlegs' || currentPage === 'glutes' ||
+                   currentPage === 'cardio' || currentPage === 'lowerlegs') {
             e.preventDefault();
             showPage('exercises');
         } else if (currentPage === 'exercise-detail') {
             e.preventDefault();
-            showPage('triceps');
-        } else if (currentPage !== 'calendar') {
-            e.preventDefault();
-            showPage('exercises');
+            if (currentPage === 'exercise-detail') {
+                // Возвращаемся к предыдущей категории
+                const lastCategory = localStorage.getItem('lastCategory') || 'triceps';
+                showPage(lastCategory);
+            }
         }
     }, false);
 }
@@ -664,36 +666,47 @@ function showPage(pageName) {
     } else if (pageName === 'triceps') {
         if (pageTriceps) pageTriceps.style.display = 'block';
         currentPage = 'triceps';
+        localStorage.setItem('lastCategory', 'triceps');
     } else if (pageName === 'chest') {
         if (pageChest) pageChest.style.display = 'block';
         currentPage = 'chest';
+        localStorage.setItem('lastCategory', 'chest');
     } else if (pageName === 'shoulder') {
         if (pageShoulder) pageShoulder.style.display = 'block';
         currentPage = 'shoulder';
+        localStorage.setItem('lastCategory', 'shoulder');
     } else if (pageName === 'biceps') {
         if (pageBiceps) pageBiceps.style.display = 'block';
         currentPage = 'biceps';
+        localStorage.setItem('lastCategory', 'biceps');
     } else if (pageName === 'abs') {
         if (pageAbs) pageAbs.style.display = 'block';
         currentPage = 'abs';
+        localStorage.setItem('lastCategory', 'abs');
     } else if (pageName === 'back') {
         if (pageBack) pageBack.style.display = 'block';
         currentPage = 'back';
+        localStorage.setItem('lastCategory', 'back');
     } else if (pageName === 'forearms') {
         if (pageForearms) pageForearms.style.display = 'block';
         currentPage = 'forearms';
+        localStorage.setItem('lastCategory', 'forearms');
     } else if (pageName === 'upperlegs') {
         if (pageUpperlegs) pageUpperlegs.style.display = 'block';
         currentPage = 'upperlegs';
+        localStorage.setItem('lastCategory', 'upperlegs');
     } else if (pageName === 'glutes') {
         if (pageGlutes) pageGlutes.style.display = 'block';
         currentPage = 'glutes';
+        localStorage.setItem('lastCategory', 'glutes');
     } else if (pageName === 'cardio') {
         if (pageCardio) pageCardio.style.display = 'block';
         currentPage = 'cardio';
+        localStorage.setItem('lastCategory', 'cardio');
     } else if (pageName === 'lowerlegs') {
         if (pageLowerlegs) pageLowerlegs.style.display = 'block';
         currentPage = 'lowerlegs';
+        localStorage.setItem('lastCategory', 'lowerlegs');
     } else if (pageName === 'exercise-detail') {
         if (pageExerciseDetail) pageExerciseDetail.style.display = 'block';
         currentPage = 'exercise-detail';
@@ -717,6 +730,73 @@ function openExerciseDetail(name, imgSrc) {
     renderSets();
     
     showPage('exercise-detail');
+}
+
+// ==================== ЗАГРУЗЧИК КАРТОЧЕК УПРАЖНЕНИЙ ====================
+
+async function loadExercisesForCategory(categoryId, containerId, emptyMessageId) {
+    const container = document.getElementById(containerId);
+    const emptyMessage = document.getElementById(emptyMessageId);
+    
+    if (!container) return;
+    
+    try {
+        const response = await fetch(`assets/exercises/${categoryId}/exercises/${categoryId}.json`);
+        
+        if (!response.ok) {
+            throw new Error('Файл не найден');
+        }
+        
+        const data = await response.json();
+        const exercises = data.exercises || [];
+        
+        if (exercises.length === 0) {
+            if (emptyMessage) emptyMessage.style.display = 'block';
+            container.style.display = 'none';
+            return;
+        }
+        
+        container.innerHTML = exercises.map(ex => `
+            <div class="exercise-item" data-exercise-id="${ex.id}" data-exercise-name="${ex.name}" data-exercise-img="${ex.image}">
+                <div class="exercise-item-left">
+                    <img src="${ex.image}" alt="${ex.name}" class="exercise-image" onerror="this.src='assets/icon-desktop-192.png'">
+                </div>
+                <div class="exercise-item-center">
+                    <span class="exercise-item-name">${escapeHtml(ex.name)}</span>
+                </div>
+                <div class="exercise-item-right">
+                    <button class="exercise-favorite-btn" data-favorite="false">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="none" stroke="white" stroke-width="1.5"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        container.style.display = 'flex';
+        if (emptyMessage) emptyMessage.style.display = 'none';
+        
+        setupFavoriteButtons();
+        
+        document.querySelectorAll(`#${containerId} .exercise-item`).forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!e.target.closest('.exercise-favorite-btn')) {
+                    const name = item.dataset.exerciseName;
+                    const img = item.dataset.exerciseImg;
+                    openExerciseDetail(name, img);
+                }
+            });
+        });
+        
+    } catch (error) {
+        console.error(`Ошибка загрузки упражнений для ${categoryId}:`, error);
+        if (emptyMessage) {
+            emptyMessage.innerHTML = '<p>Ошибка загрузки упражнений</p>';
+            emptyMessage.style.display = 'block';
+        }
+        container.style.display = 'none';
+    }
 }
 
 // ==================== ФУНКЦИИ ИЗБРАННОГО ====================
@@ -776,7 +856,6 @@ function renderSets() {
         </div>
     `).join('');
     
-    // Добавляем обработчики для всех полей
     document.querySelectorAll('.set-row').forEach((row, idx) => {
         const kgInput = row.querySelector('.set-kg');
         const repsInput = row.querySelector('.set-reps');
