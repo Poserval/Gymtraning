@@ -5,6 +5,8 @@ let splashTimeout = null;
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log('App started');
+    
     // Загружаем все необходимые страницы
     await loadPages();
     
@@ -19,6 +21,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Настройка навигации
     setupNavigation();
+    
+    // Обработка кнопки "Назад" на Android
+    setupBackButton();
 });
 
 // ==================== ЗАГРУЗКА СТРАНИЦ ====================
@@ -33,10 +38,18 @@ async function loadPages() {
     ];
     
     const appRoot = document.getElementById('app-root');
+    if (!appRoot) {
+        console.error('app-root not found');
+        return;
+    }
     
     for (const page of pages) {
         try {
             const response = await fetch(page.url);
+            if (!response.ok) {
+                console.warn(`Page ${page.url} not found, skipping`);
+                continue;
+            }
             const html = await response.text();
             const wrapper = document.createElement('div');
             wrapper.innerHTML = html;
@@ -45,6 +58,7 @@ async function loadPages() {
                 pageElement.id = page.id;
                 pageElement.classList.add('page');
                 appRoot.appendChild(pageElement);
+                console.log(`Loaded: ${page.id}`);
             }
         } catch (error) {
             console.error(`Ошибка загрузки страницы ${page.url}:`, error);
@@ -57,6 +71,7 @@ async function loadStyles() {
     const styles = [
         'styles/calendar.css',
         'styles/workouts.css',
+        'styles/workout-detail.css',
         'styles/exercises-list.css',
         'styles/exercise-detail.css'
     ];
@@ -66,30 +81,65 @@ async function loadStyles() {
         link.rel = 'stylesheet';
         link.href = style;
         document.head.appendChild(link);
+        console.log(`Loaded style: ${style}`);
     }
 }
 
 // ==================== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ====================
 async function initModules() {
-    // Динамическая загрузка модулей
-    await import('./modules/storage.js');
-    await import('./modules/calendar.js');
-    await import('./modules/workouts.js');
-    await import('./modules/exercises-list.js');
-    await import('./modules/triceps.js');
-    await import('./modules/exercise-detail.js');
+    // Загружаем модули в правильном порядке
+    const modules = [
+        'js/modules/storage.js',
+        'js/modules/calendar.js',
+        'js/modules/workouts.js',
+        'js/modules/workout-detail.js',
+        'js/modules/exercises-list.js',
+        'js/modules/triceps.js',
+        'js/modules/exercise-detail.js'
+    ];
     
-    // Вызов инициализаторов
-    if (window.initCalendar) window.initCalendar();
-    if (window.initWorkouts) window.initWorkouts();
-    if (window.initExercisesList) window.initExercisesList();
-    if (window.initTriceps) window.initTriceps();
-    if (window.initExerciseDetail) window.initExerciseDetail();
+    for (const module of modules) {
+        try {
+            await import(module);
+            console.log(`Loaded module: ${module}`);
+        } catch (error) {
+            console.error(`Ошибка загрузки модуля ${module}:`, error);
+        }
+    }
+    
+    // Вызов инициализаторов после загрузки всех модулей
+    setTimeout(() => {
+        if (window.initCalendar) {
+            window.initCalendar();
+            console.log('Calendar initialized');
+        }
+        if (window.initWorkouts) {
+            window.initWorkouts();
+            console.log('Workouts initialized');
+        }
+        if (window.initWorkoutDetail) {
+            window.initWorkoutDetail();
+            console.log('WorkoutDetail initialized');
+        }
+        if (window.initExercisesList) {
+            window.initExercisesList();
+            console.log('ExercisesList initialized');
+        }
+        if (window.initTriceps) {
+            window.initTriceps();
+            console.log('Triceps initialized');
+        }
+        if (window.initExerciseDetail) {
+            window.initExerciseDetail();
+            console.log('ExerciseDetail initialized');
+        }
+    }, 100);
 }
 
 // ==================== ЗАСТАВКА ====================
 function setupSplashScreen() {
     const splash = document.getElementById("splash-screen");
+    if (!splash) return;
     
     splashTimeout = setTimeout(() => {
         hideSplashScreen();
@@ -116,6 +166,13 @@ function hideSplashScreen() {
         setTimeout(() => {
             splash.style.display = "none";
             showPage('calendar');
+            
+            // После показа календаря устанавливаем позицию на текущий месяц
+            setTimeout(() => {
+                if (window.setInitialPositionToCurrentMonth) {
+                    window.setInitialPositionToCurrentMonth();
+                }
+            }, 100);
         }, 300);
     }
 }
@@ -131,6 +188,9 @@ function setupNavigation() {
         navTraining.addEventListener('click', () => {
             showPage('workouts');
             updateActiveNav('nav-training');
+            if (window.renderWorkoutsList) {
+                window.renderWorkoutsList();
+            }
         });
     }
     
@@ -147,12 +207,23 @@ function setupNavigation() {
             updateActiveNav('nav-progress');
         });
     }
-    
-    // Обработка кнопки "Назад" на Android
+}
+
+function setupBackButton() {
     document.addEventListener('backbutton', (e) => {
         e.preventDefault();
-        if (window.handleBackButton) {
-            window.handleBackButton();
+        
+        // Логика возврата по страницам
+        if (currentPage === 'exercise-detail') {
+            showPage('triceps');
+        } else if (currentPage === 'triceps') {
+            showPage('exercises-list');
+        } else if (currentPage === 'exercises-list') {
+            showPage('calendar');
+        } else if (currentPage === 'workout-detail') {
+            showPage('workouts');
+        } else if (currentPage === 'workouts') {
+            showPage('calendar');
         } else if (currentPage !== 'calendar') {
             showPage('calendar');
         }
@@ -169,6 +240,9 @@ function showPage(pageName) {
     if (activePage) {
         activePage.classList.add('active');
         currentPage = pageName;
+        console.log(`Page changed to: ${pageName}`);
+    } else {
+        console.warn(`Page not found: page-${pageName}`);
     }
     
     // Уведомляем модули о смене страницы
@@ -192,6 +266,7 @@ function updateActiveNav(activeId) {
     });
 }
 
+// Экспорт глобальных функций
 window.showPage = showPage;
 window.updateActiveNav = updateActiveNav;
 window.currentPage = () => currentPage;
