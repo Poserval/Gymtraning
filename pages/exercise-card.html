@@ -1,0 +1,16 @@
+<!-- Шаблон карточки упражнения -->
+<div class="exercise-item" data-exercise-id="${id}" data-exercise-name="${name}" data-exercise-img="${image}">
+    <div class="exercise-item-left">
+        <img src="${image}" alt="${name}" class="exercise-image" onerror="this.src='assets/icon-desktop-192.png'">
+    </div>
+    <div class="exercise-item-center">
+        <span class="exercise-item-name">${name}</span>
+    </div>
+    <div class="exercise-item-right">
+        <button class="exercise-favorite-btn" data-favorite="false">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="none" stroke="white" stroke-width="1.5"/>
+            </svg>
+        </button>
+    </div>
+</div>
