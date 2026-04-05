@@ -1,0 +1,11 @@
+{
+  "category": "triceps",
+  "title": "Трицепс",
+  "exercises": [
+    {
+      "id": "triceps_001",
+      "name": "Жим от брусьев",
+      "image": "assets/exercises/triceps/images/icon-triceps-001.png"
+    }
+  ]
+}
