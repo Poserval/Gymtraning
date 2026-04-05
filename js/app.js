@@ -245,6 +245,15 @@ function showPage(pageName) {
         console.warn(`Page not found: page-${pageName}`);
     }
     
+    // Специальные действия при смене страницы
+    if (pageName === 'exercise-detail' && window.resetSets) {
+        window.resetSets();
+    }
+    
+    if (pageName === 'workouts' && window.renderWorkoutsList) {
+        window.renderWorkoutsList();
+    }
+    
     // Уведомляем модули о смене страницы
     if (window.onPageChange) {
         window.onPageChange(pageName);
