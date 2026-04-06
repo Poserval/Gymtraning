@@ -295,8 +295,10 @@ function openEditModal(index) {
     if (nameInput) nameInput.value = workout.name;
     if (daySelect) daySelect.value = workout.day;
     
+    // Сохраняем старую функцию
     const oldConfirmHandler = confirmBtn.onclick;
     
+    // Назначаем новую для редактирования
     confirmBtn.onclick = () => {
         const newName = nameInput ? nameInput.value.trim() : '';
         const newDay = daySelect ? daySelect.value : 'any';
@@ -306,6 +308,7 @@ function openEditModal(index) {
             workouts[index].day = newDay;
             saveWorkouts();
             if (modal) modal.style.display = 'none';
+            // Восстанавливаем старую функцию
             confirmBtn.onclick = oldConfirmHandler;
         } else {
             alert('Введите название тренировки');
@@ -649,7 +652,6 @@ function showPage(pageName) {
         if (pageTriceps) pageTriceps.style.display = 'block';
         currentPage = 'triceps';
         localStorage.setItem('lastCategory', 'triceps');
-        // Функция загрузки упражнений теперь в exercise-card.js
         if (typeof loadTricepsExercises === 'function') {
             loadTricepsExercises();
         }
@@ -704,7 +706,7 @@ function openWorkoutPage(date) {
     showPage('workout');
 }
 
-// ==================== МОДАЛЬНОЕ ОКНО ДЛЯ ТРЕНИРОВОК ====================
+// ==================== МОДАЛЬНОЕ ОКНО ====================
 
 function setupModal() {
     const addBtn = document.getElementById('add-workout-btn');
@@ -713,26 +715,26 @@ function setupModal() {
     const confirmBtn = document.getElementById('confirm-workout-btn');
     const workoutName = document.getElementById('workout-name');
     const modalTitle = document.getElementById('modal-title');
+    const daySelect = document.getElementById('workout-day');
+    
+    // Функция для создания новой тренировки
+    function createWorkoutHandler() {
+        const name = workoutName ? workoutName.value.trim() : '';
+        const day = daySelect ? daySelect.value : 'any';
+        if (addWorkout(name, day)) {
+            if (modal) modal.style.display = 'none';
+            renderWorkoutsList();
+        }
+    }
     
     if (addBtn) {
         addBtn.addEventListener('click', () => {
             if (modal) {
                 if (modalTitle) modalTitle.textContent = 'Создать тренировку';
                 if (workoutName) workoutName.value = '';
-                const daySelect = document.getElementById('workout-day');
                 if (daySelect) daySelect.value = 'any';
                 
-                confirmBtn.onclick = () => {
-                    const name = workoutName ? workoutName.value.trim() : '';
-                    const daySelect = document.getElementById('workout-day');
-                    const day = daySelect ? daySelect.value : 'any';
-                    
-                    if (addWorkout(name, day)) {
-                        if (modal) modal.style.display = 'none';
-                        renderWorkoutsList();
-                    }
-                };
-                
+                confirmBtn.onclick = createWorkoutHandler;
                 modal.style.display = 'flex';
             }
         });
