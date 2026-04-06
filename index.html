@@ -1,726 +1,1044 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="theme-color" content="#121212">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Gym Training</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="css/exercise-card.css">
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- ГЛАВНАЯ ИКОНКА ДЛЯ ANDROID (PWA) -->
-    <link rel="icon" href="assets/icon-desktop-192.png" type="image/png">
-    
-    <!-- Иконки для разных размеров -->
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/icon-desktop-16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-desktop-32.png">
-    <link rel="icon" type="image/png" sizes="48x48" href="assets/icon-desktop-48.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="assets/icon-desktop-64.png">
-    <link rel="icon" type="image/png" sizes="72x72" href="assets/icon-desktop-72.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="assets/icon-desktop-96.png">
-    <link rel="icon" type="image/png" sizes="128x128" href="assets/icon-desktop-128.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="assets/icon-desktop-144.png">
-    <link rel="icon" type="image/png" sizes="152x152" href="assets/icon-desktop-152.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-desktop-192.png">
-    <link rel="icon" type="image/png" sizes="256x256" href="assets/icon-desktop-256.png">
-    <link rel="icon" type="image/png" sizes="384x384" href="assets/icon-desktop-384.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-desktop-512.png">
-    
-    <!-- Apple Touch Icon для iOS -->
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-desktop-152.png">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Gym Training">
-</head>
-<body>
-    <!-- ЭКРАН ЗАСТАВКИ -->
-    <div id="splash-screen">
-        <img id="splash-image" src="assets/icon-main.png" alt="Gym Training">
-    </div>
+// ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+let currentYear = 2026;
+let currentMonthIndex = 3;
+let monthsData = [];
+let isFirstLoad = true;
+let splashTimeout = null;
+let isAppLoaded = false;
+let selectedDate = null;
+let currentPage = 'calendar';
+let workouts = [];
+let editingWorkoutIndex = null;
+let dragStartIndex = null;
+let currentWorkoutIndex = null;
 
-    <!-- СТРАНИЦА 1: КАЛЕНДАРЬ -->
-    <div id="page-calendar" class="page" style="display: none;">
-        <div class="calendar-wrapper">
-            <div class="calendar-header">
-                <h2 id="current-month">Апрель 2026</h2>
-                <button id="reset-calendar-btn" class="reset-calendar-btn" title="Вернуться к текущему месяцу">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 4V2L8 6L12 10V8C15.31 8 18 10.69 18 14C18 15.01 17.75 15.97 17.3 16.8L18.76 18.26C19.54 17.03 20 15.57 20 14C20 9.58 16.42 6 12 6V4Z" fill="white"/>
-                        <path d="M12 18V20L16 16L12 12V14C8.69 14 6 11.31 6 8C6 6.99 6.25 6.03 6.7 5.2L5.24 3.74C4.46 4.97 4 6.43 4 8C4 12.42 7.58 16 12 16V18Z" fill="white"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="calendar-window" id="calendar-window">
-                <div class="calendar-scroll-container" id="calendar-scroll">
-                    <div class="calendar-months" id="calendar-months">
-                        <!-- Месяцы будут добавлены через JavaScript -->
-                    </div>
+// Элементы страниц
+const pageCalendar = document.getElementById('page-calendar');
+const pageWorkout = document.getElementById('page-workout');
+const pageWorkoutDetail = document.getElementById('page-workout-detail');
+const pageExercises = document.getElementById('page-exercises');
+const pageTriceps = document.getElementById('page-triceps');
+const pageChest = document.getElementById('page-chest');
+const pageShoulder = document.getElementById('page-shoulder');
+const pageBiceps = document.getElementById('page-biceps');
+const pageAbs = document.getElementById('page-abs');
+const pageBack = document.getElementById('page-back');
+const pageForearms = document.getElementById('page-forearms');
+const pageUpperlegs = document.getElementById('page-upperlegs');
+const pageGlutes = document.getElementById('page-glutes');
+const pageCardio = document.getElementById('page-cardio');
+const pageLowerlegs = document.getElementById('page-lowerlegs');
+const pageExerciseDetail = document.getElementById('page-exercise-detail');
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+document.addEventListener("DOMContentLoaded", () => {
+    loadWorkouts();
+    initCalendar();
+    setupSplashScreen();
+    setupNavigation();
+    setupBottomNav();
+    setupModal();
+    setupWorkoutMenu();
+});
+
+// ==================== РАБОТА С ТРЕНИРОВКАМИ ====================
+
+function loadWorkouts() {
+    const savedWorkouts = localStorage.getItem('gym_workouts_list');
+    if (savedWorkouts) {
+        workouts = JSON.parse(savedWorkouts);
+    } else {
+        workouts = [];
+    }
+    renderWorkoutsList();
+}
+
+function saveWorkouts() {
+    localStorage.setItem('gym_workouts_list', JSON.stringify(workouts));
+    renderWorkoutsList();
+}
+
+function renderWorkoutsList() {
+    const workoutsList = document.getElementById('workouts-list');
+    const emptyPlaceholder = document.getElementById('empty-workouts');
+    
+    if (!workoutsList || !emptyPlaceholder) return;
+    
+    if (workouts.length === 0) {
+        workoutsList.style.display = 'none';
+        emptyPlaceholder.style.display = 'block';
+        return;
+    }
+    
+    workoutsList.style.display = 'flex';
+    emptyPlaceholder.style.display = 'none';
+    
+    const dayNames = {
+        'monday': 'Понедельник',
+        'tuesday': 'Вторник',
+        'wednesday': 'Среда',
+        'thursday': 'Четверг',
+        'friday': 'Пятница',
+        'saturday': 'Суббота',
+        'sunday': 'Воскресенье',
+        'any': 'Любой день'
+    };
+    
+    workoutsList.innerHTML = workouts.map((workout, index) => `
+        <div class="workout-card" data-index="${index}" draggable="true">
+            <div class="drag-handle">
+                <div class="drag-dots-row">
+                    <div class="drag-dot"></div>
+                    <div class="drag-dot"></div>
+                </div>
+                <div class="drag-dots-row">
+                    <div class="drag-dot"></div>
+                    <div class="drag-dot"></div>
+                </div>
+                <div class="drag-dots-row">
+                    <div class="drag-dot"></div>
+                    <div class="drag-dot"></div>
                 </div>
             </div>
+            <div class="workout-card-content">
+                <div class="workout-day-badge ${workout.day === 'any' ? 'any-day' : ''}">
+                    ${dayNames[workout.day]}
+                </div>
+                <div class="workout-name">${escapeHtml(workout.name)}</div>
+            </div>
+            <button class="workout-menu-btn" data-index="${index}">
+                <div class="menu-dot"></div>
+                <div class="menu-dot"></div>
+                <div class="menu-dot"></div>
+            </button>
         </div>
-    </div>
+    `).join('');
+    
+    setupDragAndDrop();
+    setupWorkoutCardMenus();
+    
+    document.querySelectorAll('.workout-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.workout-menu-btn') && !e.target.closest('.drag-handle')) {
+                const index = parseInt(card.dataset.index);
+                openWorkoutDetail(index);
+            }
+        });
+    });
+}
 
-    <!-- СТРАНИЦА 2: СПИСОК ТРЕНИРОВОК -->
-    <div id="page-workout" class="page" style="display: none;">
-        <div class="workout-container">
-            <div class="workout-header">
-                <button id="back-to-calendar-btn" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2 id="workout-title">Создай тренировку</h2>
-                <button id="add-workout-btn" class="add-workout-btn" title="Добавить тренировку">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="workout-content">
-                <div id="workouts-list" class="workouts-list">
-                    <!-- Список тренировок будет здесь -->
-                </div>
-                <div id="empty-workouts" class="workout-placeholder">
-                    <p>Нет созданных тренировок</p>
-                    <p style="margin-top: 20px; color: #888;">Нажмите + чтобы создать тренировку</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function openWorkoutDetail(index) {
+    currentWorkoutIndex = index;
+    const workout = workouts[index];
+    if (!workout) return;
+    
+    const dayBadge = document.getElementById('detail-day-badge');
+    const workoutName = document.getElementById('detail-workout-name');
+    
+    const shortDayNames = {
+        'monday': 'Пн',
+        'tuesday': 'Вт',
+        'wednesday': 'Ср',
+        'thursday': 'Чт',
+        'friday': 'Пт',
+        'saturday': 'Сб',
+        'sunday': 'Вс',
+        'any': 'Любой'
+    };
+    
+    if (dayBadge) {
+        dayBadge.textContent = shortDayNames[workout.day] || 'Любой';
+        if (workout.day === 'any') {
+            dayBadge.classList.add('any-day');
+        } else {
+            dayBadge.classList.remove('any-day');
+        }
+    }
+    
+    if (workoutName) {
+        workoutName.textContent = workout.name;
+    }
+    
+    showPage('workout-detail');
+}
 
-    <!-- СТРАНИЦА 3: ДЕТАЛИ ТРЕНИРОВКИ -->
-    <div id="page-workout-detail" class="page" style="display: none;">
-        <div class="detail-container">
-            <div class="detail-header">
-                <button id="back-to-workout-list-btn" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <div class="detail-header-info">
-                    <span class="detail-day-badge" id="detail-day-badge">Пн</span>
-                    <h2 id="detail-workout-name">Спина</h2>
-                </div>
-                <div style="width: 40px;"></div>
-            </div>
-            <div class="detail-content">
-                <button id="add-exercise-btn" class="add-exercise-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#ff9800"/>
-                    </svg>
-                    <span>Выбери упражнение</span>
-                </button>
-                <div id="exercises-list" class="exercises-list">
-                    <!-- Список упражнений будет здесь -->
-                </div>
-                <div id="empty-exercises" class="empty-exercises">
-                    <p>Нет добавленных упражнений</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите "Выбери упражнение" чтобы добавить</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function setupDragAndDrop() {
+    const cards = document.querySelectorAll('.workout-card');
+    let dragOverIndex = null;
+    
+    cards.forEach(card => {
+        card.setAttribute('draggable', 'true');
+        
+        card.addEventListener('dragstart', (e) => {
+            dragStartIndex = parseInt(card.dataset.index);
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        card.addEventListener('dragend', (e) => {
+            card.classList.remove('dragging');
+            if (dragOverIndex !== null && dragStartIndex !== null && dragStartIndex !== dragOverIndex) {
+                const [movedItem] = workouts.splice(dragStartIndex, 1);
+                workouts.splice(dragOverIndex, 0, movedItem);
+                saveWorkouts();
+            }
+            dragStartIndex = null;
+            dragOverIndex = null;
+        });
+        
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const targetIndex = parseInt(card.dataset.index);
+            if (targetIndex !== dragOverIndex) {
+                dragOverIndex = targetIndex;
+            }
+        });
+    });
+}
 
-    <!-- СТРАНИЦА 4: УПРАЖНЕНИЯ -->
-    <div id="page-exercises" class="page" style="display: none;">
-        <div class="exercises-container">
-            <div class="exercises-header">
-                <button id="back-to-main-from-exercises" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Упражнения</h2>
-                <div style="width: 40px;"></div>
-            </div>
+function setupWorkoutCardMenus() {
+    const menuBtns = document.querySelectorAll('.workout-menu-btn');
+    menuBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.index);
+            showWorkoutMenu(btn, index);
+        });
+    });
+}
+
+function setupWorkoutMenu() {
+    const menu = document.getElementById('workout-menu');
+    const editBtn = document.getElementById('menu-edit');
+    const copyBtn = document.getElementById('menu-copy');
+    const deleteBtn = document.getElementById('menu-delete');
+    
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            if (editingWorkoutIndex !== null) {
+                closeWorkoutMenu();
+                openEditModal(editingWorkoutIndex);
+            }
+        });
+    }
+    
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            if (editingWorkoutIndex !== null) {
+                copyWorkout(editingWorkoutIndex);
+                closeWorkoutMenu();
+            }
+        });
+    }
+    
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if (editingWorkoutIndex !== null && confirm('Удалить тренировку?')) {
+                workouts.splice(editingWorkoutIndex, 1);
+                saveWorkouts();
+                closeWorkoutMenu();
+            }
+        });
+    }
+    
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.workout-menu-btn') && !e.target.closest('#workout-menu')) {
+            closeWorkoutMenu();
+        }
+    });
+}
+
+function showWorkoutMenu(button, index) {
+    const menu = document.getElementById('workout-menu');
+    if (!menu) return;
+    
+    editingWorkoutIndex = index;
+    const rect = button.getBoundingClientRect();
+    
+    menu.style.display = 'block';
+    menu.style.position = 'fixed';
+    menu.style.top = rect.bottom + 5 + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+}
+
+function closeWorkoutMenu() {
+    const menu = document.getElementById('workout-menu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
+    editingWorkoutIndex = null;
+}
+
+function copyWorkout(index) {
+    const original = workouts[index];
+    const copy = {
+        ...original,
+        id: Date.now(),
+        name: original.name + ' (копия)'
+    };
+    workouts.splice(index + 1, 0, copy);
+    saveWorkouts();
+}
+
+function openEditModal(index) {
+    const workout = workouts[index];
+    if (!workout) return;
+    
+    const modal = document.getElementById('workout-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const nameInput = document.getElementById('workout-name');
+    const daySelect = document.getElementById('workout-day');
+    const confirmBtn = document.getElementById('confirm-workout-btn');
+    
+    if (modalTitle) modalTitle.textContent = 'Редактировать тренировку';
+    if (nameInput) nameInput.value = workout.name;
+    if (daySelect) daySelect.value = workout.day;
+    
+    const oldConfirmHandler = confirmBtn.onclick;
+    
+    confirmBtn.onclick = () => {
+        const newName = nameInput ? nameInput.value.trim() : '';
+        const newDay = daySelect ? daySelect.value : 'any';
+        
+        if (newName) {
+            workouts[index].name = newName;
+            workouts[index].day = newDay;
+            saveWorkouts();
+            if (modal) modal.style.display = 'none';
+            confirmBtn.onclick = oldConfirmHandler;
+        } else {
+            alert('Введите название тренировки');
+        }
+    };
+    
+    if (modal) modal.style.display = 'flex';
+}
+
+function addWorkout(name, day) {
+    if (!name || name.trim() === '') {
+        alert('Введите название тренировки');
+        return false;
+    }
+    
+    workouts.push({
+        id: Date.now(),
+        name: name.trim(),
+        day: day,
+        createdAt: new Date().toISOString(),
+        exercises: []
+    });
+    
+    saveWorkouts();
+    return true;
+}
+
+// ==================== ФУНКЦИИ ЗАСТАВКИ ====================
+
+function setupSplashScreen() {
+    const splash = document.getElementById("splash-screen");
+    const pageCalendar = document.getElementById("page-calendar");
+    
+    if (!splash || !pageCalendar) return;
+    
+    splashTimeout = setTimeout(() => {
+        hideSplashScreen();
+    }, 5000);
+    
+    splash.addEventListener('click', () => {
+        hideSplashScreen();
+    });
+}
+
+function hideSplashScreen() {
+    if (isAppLoaded) return;
+    isAppLoaded = true;
+    
+    if (splashTimeout) {
+        clearTimeout(splashTimeout);
+        splashTimeout = null;
+    }
+    
+    const splash = document.getElementById("splash-screen");
+    const pageCalendar = document.getElementById("page-calendar");
+    
+    if (splash && pageCalendar) {
+        splash.style.opacity = "0";
+        setTimeout(() => {
+            splash.style.display = "none";
+            pageCalendar.style.display = "block";
             
-            <div class="exercises-content">
-                <div class="exercises-grid">
-                    <div class="exercise-category" data-category="triceps">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-triceps.png" alt="Трицепс">
-                        </div>
-                        <span class="category-name">Трицепс</span>
-                    </div>
-                    <div class="exercise-category" data-category="chest">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-chest.png" alt="Грудные">
-                        </div>
-                        <span class="category-name">Грудные</span>
-                    </div>
-                    <div class="exercise-category" data-category="shoulder">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-shoulder.png" alt="Плечи">
-                        </div>
-                        <span class="category-name">Плечи</span>
-                    </div>
-                </div>
-                <div class="exercises-grid">
-                    <div class="exercise-category" data-category="biceps">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-biceps.png" alt="Бицепс">
-                        </div>
-                        <span class="category-name">Бицепс</span>
-                    </div>
-                    <div class="exercise-category" data-category="abs">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-abs.png" alt="Пресс">
-                        </div>
-                        <span class="category-name">Пресс</span>
-                    </div>
-                    <div class="exercise-category" data-category="back">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-back.png" alt="Спина">
-                        </div>
-                        <span class="category-name">Спина</span>
-                    </div>
-                </div>
-                <div class="exercises-grid">
-                    <div class="exercise-category" data-category="forearms">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-forearms.png" alt="Предплечье">
-                        </div>
-                        <span class="category-name">Предплечье</span>
-                    </div>
-                    <div class="exercise-category" data-category="upperlegs">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-upperlegs.png" alt="Ноги (верх)">
-                        </div>
-                        <span class="category-name">Ноги (верх)</span>
-                    </div>
-                    <div class="exercise-category" data-category="glutes">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-glutes.png" alt="Ягодицы">
-                        </div>
-                        <span class="category-name">Ягодицы</span>
-                    </div>
-                </div>
-                <div class="exercises-grid">
-                    <div class="exercise-category" data-category="cardio">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-cardio.png" alt="Кардио">
-                        </div>
-                        <span class="category-name">Кардио</span>
-                    </div>
-                    <div class="exercise-category" data-category="lowerlegs">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-lowerlegs.png" alt="Ноги (низ)">
-                        </div>
-                        <span class="category-name">Ноги (низ)</span>
-                    </div>
-                    <div class="exercise-category" data-category="all">
-                        <div class="category-icon">
-                            <img src="assets/icon-exercises-all.png" alt="Все">
-                        </div>
-                        <span class="category-name">Все</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+            setTimeout(() => {
+                setInitialPositionToCurrentMonth();
+                isFirstLoad = false;
+            }, 50);
+        }, 300);
+    }
+}
 
-    <!-- СТРАНИЦА 5: УПРАЖНЕНИЯ - ТРИЦЕПС -->
-    <div id="page-triceps" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-triceps" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Трицепс</h2>
-                <div class="detail-actions">
-                    <button id="add-triceps-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-triceps-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="triceps-exercises-list" class="exercises-detail-list">
-                    <!-- Список упражнений будет загружен через JavaScript -->
-                </div>
-                <div id="empty-triceps" class="empty-exercises-detail" style="display: none;">
-                    <p>Нет упражнений для трицепса</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+// ==================== ФУНКЦИИ НАВИГАЦИИ ====================
 
-    <!-- СТРАНИЦА 6: ДЕТАЛИ УПРАЖНЕНИЯ -->
-    <div id="page-exercise-detail" class="page" style="display: none;">
-        <div class="exercise-detail-container">
-            <div class="exercise-detail-header">
-                <button id="back-to-triceps-from-detail" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2 id="exercise-detail-name">Жим от брусьев</h2>
-                <div style="width: 40px;"></div>
-            </div>
-            <div class="exercise-detail-content">
-                <div class="exercise-detail-image">
-                    <img id="exercise-detail-img" src="assets/exercises/triceps/images/icon-triceps-001.png" alt="Жим от брусьев" onerror="this.src='assets/icon-desktop-192.png'">
-                </div>
-                <div class="exercise-sets-container">
-                    <div class="sets-header">
-                        <span class="sets-header-cell">Сет</span>
-                        <span class="sets-header-cell">Кг</span>
-                        <span class="sets-header-cell">Повторения</span>
-                        <span class="sets-header-cell">✓</span>
-                    </div>
-                    <div id="sets-list" class="sets-list">
-                        <!-- Сеты будут добавлены через JavaScript -->
-                    </div>
-                    <div class="sets-buttons">
-                        <button id="add-set-btn" class="add-set-btn">+ Добавить</button>
-                        <button id="remove-set-btn" class="remove-set-btn">− Удалить</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+function setupNavigation() {
+    // Назад из списка тренировок в календарь
+    const backBtn = document.getElementById('back-to-calendar-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            showPage('calendar');
+        });
+    }
+    
+    // Назад из деталей тренировки в список тренировок
+    const backToWorkoutListBtn = document.getElementById('back-to-workout-list-btn');
+    if (backToWorkoutListBtn) {
+        backToWorkoutListBtn.addEventListener('click', () => {
+            showPage('workout');
+        });
+    }
+    
+    // Кнопка "Выбери упражнение" (пока без функционала)
+    const addExerciseBtn = document.getElementById('add-exercise-btn');
+    if (addExerciseBtn) {
+        addExerciseBtn.addEventListener('click', () => {
+            alert('Функционал добавления упражнений в разработке');
+        });
+    }
+    
+    // Назад со страницы упражнений на главный экран
+    const backToMainFromExercises = document.getElementById('back-to-main-from-exercises');
+    if (backToMainFromExercises) {
+        backToMainFromExercises.addEventListener('click', () => {
+            showPage('calendar');
+        });
+    }
+    
+    // Назад со страницы Трицепс на страницу упражнений
+    const backToExercisesFromTriceps = document.getElementById('back-to-exercises-from-triceps');
+    if (backToExercisesFromTriceps) {
+        backToExercisesFromTriceps.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы деталей упражнения на страницу Трицепс
+    const backToTricepsFromDetail = document.getElementById('back-to-triceps-from-detail');
+    if (backToTricepsFromDetail) {
+        backToTricepsFromDetail.addEventListener('click', () => {
+            showPage('triceps');
+        });
+    }
+    
+    // Назад со страницы Грудные
+    const backToExercisesFromChest = document.getElementById('back-to-exercises-from-chest');
+    if (backToExercisesFromChest) {
+        backToExercisesFromChest.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Плечи
+    const backToExercisesFromShoulder = document.getElementById('back-to-exercises-from-shoulder');
+    if (backToExercisesFromShoulder) {
+        backToExercisesFromShoulder.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Бицепс
+    const backToExercisesFromBiceps = document.getElementById('back-to-exercises-from-biceps');
+    if (backToExercisesFromBiceps) {
+        backToExercisesFromBiceps.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Пресс
+    const backToExercisesFromAbs = document.getElementById('back-to-exercises-from-abs');
+    if (backToExercisesFromAbs) {
+        backToExercisesFromAbs.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Спина
+    const backToExercisesFromBack = document.getElementById('back-to-exercises-from-back');
+    if (backToExercisesFromBack) {
+        backToExercisesFromBack.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Предплечье
+    const backToExercisesFromForearms = document.getElementById('back-to-exercises-from-forearms');
+    if (backToExercisesFromForearms) {
+        backToExercisesFromForearms.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Ноги (верх)
+    const backToExercisesFromUpperlegs = document.getElementById('back-to-exercises-from-upperlegs');
+    if (backToExercisesFromUpperlegs) {
+        backToExercisesFromUpperlegs.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Ягодицы
+    const backToExercisesFromGlutes = document.getElementById('back-to-exercises-from-glutes');
+    if (backToExercisesFromGlutes) {
+        backToExercisesFromGlutes.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Кардио
+    const backToExercisesFromCardio = document.getElementById('back-to-exercises-from-cardio');
+    if (backToExercisesFromCardio) {
+        backToExercisesFromCardio.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Назад со страницы Ноги (низ)
+    const backToExercisesFromLowerlegs = document.getElementById('back-to-exercises-from-lowerlegs');
+    if (backToExercisesFromLowerlegs) {
+        backToExercisesFromLowerlegs.addEventListener('click', () => {
+            showPage('exercises');
+        });
+    }
+    
+    // Обработка нажатий на категории упражнений
+    const exerciseCategories = document.querySelectorAll('.exercise-category');
+    exerciseCategories.forEach(category => {
+        category.addEventListener('click', () => {
+            const categoryData = category.getAttribute('data-category');
+            
+            if (categoryData === 'triceps') {
+                showPage('triceps');
+            } else if (categoryData === 'chest') {
+                showPage('chest');
+            } else if (categoryData === 'shoulder') {
+                showPage('shoulder');
+            } else if (categoryData === 'biceps') {
+                showPage('biceps');
+            } else if (categoryData === 'abs') {
+                showPage('abs');
+            } else if (categoryData === 'back') {
+                showPage('back');
+            } else if (categoryData === 'forearms') {
+                showPage('forearms');
+            } else if (categoryData === 'upperlegs') {
+                showPage('upperlegs');
+            } else if (categoryData === 'glutes') {
+                showPage('glutes');
+            } else if (categoryData === 'cardio') {
+                showPage('cardio');
+            } else if (categoryData === 'lowerlegs') {
+                showPage('lowerlegs');
+            } else if (categoryData === 'all') {
+                alert('Раздел "Все" в разработке');
+            }
+        });
+    });
+    
+    // Обработка нажатий на вкладки упражнений (открытие детальной страницы)
+    const exerciseItems = document.querySelectorAll('.exercise-item');
+    exerciseItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const exerciseName = item.querySelector('.exercise-item-name')?.textContent || 'Упражнение';
+            const exerciseImg = item.querySelector('.exercise-image')?.src || '';
+            openExerciseDetail(exerciseName, exerciseImg);
+        });
+    });
+    
+    // Обработка кнопки "Назад" на телефоне (Android)
+    document.addEventListener('backbutton', (e) => {
+        if (currentPage === 'workout-detail') {
+            e.preventDefault();
+            showPage('workout');
+        } else if (currentPage === 'workout') {
+            e.preventDefault();
+            showPage('calendar');
+        } else if (currentPage === 'exercises') {
+            e.preventDefault();
+            showPage('calendar');
+        } else if (currentPage === 'triceps') {
+            e.preventDefault();
+            showPage('exercises');
+        } else if (currentPage === 'exercise-detail') {
+            e.preventDefault();
+            showPage('triceps');
+        } else if (currentPage !== 'calendar') {
+            e.preventDefault();
+            showPage('exercises');
+        }
+    }, false);
+}
 
-    <!-- СТРАНИЦА 7: ГРУДНЫЕ (заглушка) -->
-    <div id="page-chest" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-chest" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Грудные</h2>
-                <div class="detail-actions">
-                    <button id="add-chest-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-chest-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="chest-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-chest" class="empty-exercises-detail">
-                    <p>Нет упражнений для грудных</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function setupBottomNav() {
+    const navTraining = document.getElementById('nav-training');
+    const navExercises = document.getElementById('nav-exercises');
+    const navProgress = document.getElementById('nav-progress');
+    
+    if (navTraining) {
+        navTraining.addEventListener('click', () => {
+            showPage('workout');
+            updateActiveNav('nav-training');
+        });
+    }
+    
+    if (navExercises) {
+        navExercises.addEventListener('click', () => {
+            showPage('exercises');
+            updateActiveNav('nav-exercises');
+        });
+    }
+    
+    if (navProgress) {
+        navProgress.addEventListener('click', () => {
+            alert('Страница прогресса в разработке');
+            updateActiveNav('nav-progress');
+        });
+    }
+    
+    updateActiveNav('nav-training');
+}
 
-    <!-- СТРАНИЦА 8: ПЛЕЧИ (заглушка) -->
-    <div id="page-shoulder" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-shoulder" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Плечи</h2>
-                <div class="detail-actions">
-                    <button id="add-shoulder-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-shoulder-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="shoulder-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-shoulder" class="empty-exercises-detail">
-                    <p>Нет упражнений для плеч</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function updateActiveNav(activeId) {
+    const navBtns = ['nav-training', 'nav-exercises', 'nav-progress'];
+    
+    navBtns.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            if (id === activeId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+}
 
-    <!-- СТРАНИЦА 9: БИЦЕПС (заглушка) -->
-    <div id="page-biceps" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-biceps" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Бицепс</h2>
-                <div class="detail-actions">
-                    <button id="add-biceps-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-biceps-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="biceps-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-biceps" class="empty-exercises-detail">
-                    <p>Нет упражнений для бицепса</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function showPage(pageName) {
+    // Скрываем все страницы
+    if (pageCalendar) pageCalendar.style.display = 'none';
+    if (pageWorkout) pageWorkout.style.display = 'none';
+    if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
+    if (pageExercises) pageExercises.style.display = 'none';
+    if (pageTriceps) pageTriceps.style.display = 'none';
+    if (pageChest) pageChest.style.display = 'none';
+    if (pageShoulder) pageShoulder.style.display = 'none';
+    if (pageBiceps) pageBiceps.style.display = 'none';
+    if (pageAbs) pageAbs.style.display = 'none';
+    if (pageBack) pageBack.style.display = 'none';
+    if (pageForearms) pageForearms.style.display = 'none';
+    if (pageUpperlegs) pageUpperlegs.style.display = 'none';
+    if (pageGlutes) pageGlutes.style.display = 'none';
+    if (pageCardio) pageCardio.style.display = 'none';
+    if (pageLowerlegs) pageLowerlegs.style.display = 'none';
+    if (pageExerciseDetail) pageExerciseDetail.style.display = 'none';
+    
+    // Показываем нужную страницу
+    if (pageName === 'calendar') {
+        if (pageCalendar) pageCalendar.style.display = 'block';
+        currentPage = 'calendar';
+        updateActiveNav('nav-training');
+    } else if (pageName === 'workout') {
+        if (pageWorkout) pageWorkout.style.display = 'block';
+        currentPage = 'workout';
+        updateActiveNav('nav-training');
+        renderWorkoutsList();
+    } else if (pageName === 'workout-detail') {
+        if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'block';
+        currentPage = 'workout-detail';
+    } else if (pageName === 'exercises') {
+        if (pageExercises) pageExercises.style.display = 'block';
+        currentPage = 'exercises';
+        updateActiveNav('nav-exercises');
+    } else if (pageName === 'triceps') {
+        if (pageTriceps) pageTriceps.style.display = 'block';
+        currentPage = 'triceps';
+        localStorage.setItem('lastCategory', 'triceps');
+        if (typeof loadTricepsExercises === 'function') {
+            loadTricepsExercises();
+        }
+    } else if (pageName === 'chest') {
+        if (pageChest) pageChest.style.display = 'block';
+        currentPage = 'chest';
+        localStorage.setItem('lastCategory', 'chest');
+    } else if (pageName === 'shoulder') {
+        if (pageShoulder) pageShoulder.style.display = 'block';
+        currentPage = 'shoulder';
+        localStorage.setItem('lastCategory', 'shoulder');
+    } else if (pageName === 'biceps') {
+        if (pageBiceps) pageBiceps.style.display = 'block';
+        currentPage = 'biceps';
+        localStorage.setItem('lastCategory', 'biceps');
+    } else if (pageName === 'abs') {
+        if (pageAbs) pageAbs.style.display = 'block';
+        currentPage = 'abs';
+        localStorage.setItem('lastCategory', 'abs');
+    } else if (pageName === 'back') {
+        if (pageBack) pageBack.style.display = 'block';
+        currentPage = 'back';
+        localStorage.setItem('lastCategory', 'back');
+    } else if (pageName === 'forearms') {
+        if (pageForearms) pageForearms.style.display = 'block';
+        currentPage = 'forearms';
+        localStorage.setItem('lastCategory', 'forearms');
+    } else if (pageName === 'upperlegs') {
+        if (pageUpperlegs) pageUpperlegs.style.display = 'block';
+        currentPage = 'upperlegs';
+        localStorage.setItem('lastCategory', 'upperlegs');
+    } else if (pageName === 'glutes') {
+        if (pageGlutes) pageGlutes.style.display = 'block';
+        currentPage = 'glutes';
+        localStorage.setItem('lastCategory', 'glutes');
+    } else if (pageName === 'cardio') {
+        if (pageCardio) pageCardio.style.display = 'block';
+        currentPage = 'cardio';
+        localStorage.setItem('lastCategory', 'cardio');
+    } else if (pageName === 'lowerlegs') {
+        if (pageLowerlegs) pageLowerlegs.style.display = 'block';
+        currentPage = 'lowerlegs';
+        localStorage.setItem('lastCategory', 'lowerlegs');
+    } else if (pageName === 'exercise-detail') {
+        if (pageExerciseDetail) pageExerciseDetail.style.display = 'block';
+        currentPage = 'exercise-detail';
+    }
+}
 
-    <!-- СТРАНИЦА 10: ПРЕСС (заглушка) -->
-    <div id="page-abs" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-abs" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Пресс</h2>
-                <div class="detail-actions">
-                    <button id="add-abs-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-abs-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="abs-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-abs" class="empty-exercises-detail">
-                    <p>Нет упражнений для пресса</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function openWorkoutPage(date) {
+    selectedDate = date;
+    showPage('workout');
+}
 
-    <!-- СТРАНИЦА 11: СПИНА (заглушка) -->
-    <div id="page-back" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-back" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Спина</h2>
-                <div class="detail-actions">
-                    <button id="add-back-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-back-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="back-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-back" class="empty-exercises-detail">
-                    <p>Нет упражнений для спины</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function openExerciseDetail(name, imgSrc) {
+    const detailName = document.getElementById('exercise-detail-name');
+    const detailImg = document.getElementById('exercise-detail-img');
+    
+    if (detailName) detailName.textContent = name;
+    if (detailImg) detailImg.src = imgSrc;
+    
+    currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
+    renderSets();
+    
+    showPage('exercise-detail');
+}
 
-    <!-- СТРАНИЦА 12: ПРЕДПЛЕЧЬЕ (заглушка) -->
-    <div id="page-forearms" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-forearms" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Предплечье</h2>
-                <div class="detail-actions">
-                    <button id="add-forearms-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-forearms-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="forearms-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-forearms" class="empty-exercises-detail">
-                    <p>Нет упражнений для предплечья</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+// ==================== МОДАЛЬНОЕ ОКНО ====================
 
-    <!-- СТРАНИЦА 13: НОГИ (ВЕРХ) (заглушка) -->
-    <div id="page-upperlegs" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-upperlegs" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Ноги (верх)</h2>
-                <div class="detail-actions">
-                    <button id="add-upperlegs-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-upperlegs-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="upperlegs-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-upperlegs" class="empty-exercises-detail">
-                    <p>Нет упражнений для ног (верх)</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function setupModal() {
+    const addBtn = document.getElementById('add-workout-btn');
+    const modal = document.getElementById('workout-modal');
+    const cancelBtn = document.getElementById('cancel-workout-btn');
+    const confirmBtn = document.getElementById('confirm-workout-btn');
+    const workoutName = document.getElementById('workout-name');
+    const modalTitle = document.getElementById('modal-title');
+    const daySelect = document.getElementById('workout-day');
+    
+    function createWorkoutHandler() {
+        const name = workoutName ? workoutName.value.trim() : '';
+        const day = daySelect ? daySelect.value : 'any';
+        if (addWorkout(name, day)) {
+            if (modal) modal.style.display = 'none';
+            renderWorkoutsList();
+        }
+    }
+    
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            if (modal) {
+                if (modalTitle) modalTitle.textContent = 'Создать тренировку';
+                if (workoutName) workoutName.value = '';
+                if (daySelect) daySelect.value = 'any';
+                
+                confirmBtn.onclick = createWorkoutHandler;
+                modal.style.display = 'flex';
+            }
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            if (modal) modal.style.display = 'none';
+        });
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+}
 
-    <!-- СТРАНИЦА 14: ЯГОДИЦЫ (заглушка) -->
-    <div id="page-glutes" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-glutes" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Ягодицы</h2>
-                <div class="detail-actions">
-                    <button id="add-glutes-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-glutes-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="glutes-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-glutes" class="empty-exercises-detail">
-                    <p>Нет упражнений для ягодиц</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+// ==================== ФУНКЦИИ КАЛЕНДАРЯ ====================
 
-    <!-- СТРАНИЦА 15: КАРДИО (заглушка) -->
-    <div id="page-cardio" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-cardio" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Кардио</h2>
-                <div class="detail-actions">
-                    <button id="add-cardio-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-cardio-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="cardio-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-cardio" class="empty-exercises-detail">
-                    <p>Нет упражнений для кардио</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function initCalendar() {
+    const today = new Date();
+    currentYear = today.getFullYear();
+    currentMonthIndex = today.getMonth();
+    
+    generateYearMonths(currentYear);
+    
+    const resetBtn = document.getElementById('reset-calendar-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            scrollToCurrentMonth();
+        });
+    }
+}
 
-    <!-- СТРАНИЦА 16: НОГИ (НИЗ) (заглушка) -->
-    <div id="page-lowerlegs" class="page" style="display: none;">
-        <div class="exercises-detail-container">
-            <div class="exercises-detail-header">
-                <button id="back-to-exercises-from-lowerlegs" class="back-btn" title="Назад">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
-                    </svg>
-                </button>
-                <h2>Ноги (низ)</h2>
-                <div class="detail-actions">
-                    <button id="add-lowerlegs-exercise-btn" class="detail-action-btn" title="Добавить упражнение">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
-                        </svg>
-                    </button>
-                    <button id="sort-lowerlegs-btn" class="detail-action-btn" title="Сортировка">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" fill="white"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="exercises-detail-content">
-                <div id="lowerlegs-exercises-list" class="exercises-detail-list"></div>
-                <div id="empty-lowerlegs" class="empty-exercises-detail">
-                    <p>Нет упражнений для ног (низ)</p>
-                    <p style="margin-top: 10px; color: #888;">Нажмите + чтобы добавить упражнение</p>
-                </div>
-            </div>
-        </div>
-    </div>
+function setInitialPositionToCurrentMonth() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
+    if (monthElement) {
+        const monthElementTop = monthElement.offsetTop;
+        const scrollContainerHeight = scrollContainer.clientHeight;
+        const monthElementHeight = monthElement.offsetHeight;
+        
+        const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
+        
+        scrollContainer.scrollTop = Math.max(0, scrollTo);
+        
+        updateMonthHeader();
+    }
+}
 
-    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ТРЕНИРОВОК -->
-    <div id="workout-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title">Создать тренировку</h3>
-            <div class="modal-field">
-                <label>Имя тренировки</label>
-                <input type="text" id="workout-name" placeholder="Например: Руки и спина" maxlength="50">
-            </div>
-            <div class="modal-field">
-                <label>День тренировки</label>
-                <div class="day-selector">
-                    <select id="workout-day">
-                        <option value="any">Любой день</option>
-                        <option value="monday">Понедельник</option>
-                        <option value="tuesday">Вторник</option>
-                        <option value="wednesday">Среда</option>
-                        <option value="thursday">Четверг</option>
-                        <option value="friday">Пятница</option>
-                        <option value="saturday">Суббота</option>
-                        <option value="sunday">Воскресенье</option>
-                    </select>
-                </div>
-                <p class="hint">Выберите "Любой день", если тренировка не привязана к конкретному дню</p>
-            </div>
-            <div class="modal-buttons">
-                <button id="cancel-workout-btn" class="modal-cancel-btn">Отмена</button>
-                <button id="confirm-workout-btn" class="modal-confirm-btn">Принять</button>
-            </div>
-        </div>
-    </div>
+function getWeeksInMonth(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    let startDay = firstDay.getDay();
+    startDay = startDay === 0 ? 6 : startDay - 1;
+    
+    const daysInMonth = lastDay.getDate();
+    const totalDays = startDay + daysInMonth;
+    const weeks = Math.ceil(totalDays / 7);
+    
+    return weeks;
+}
 
-    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ СОЗДАНИЯ УПРАЖНЕНИЯ -->
-    <div id="exercise-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="exercise-modal-title">Создать упражнение</h3>
-            <div class="modal-field">
-                <label>Имя упражнения</label>
-                <input type="text" id="exercise-name" placeholder="Например: Жим штанги узким хватом" maxlength="50">
-            </div>
-            <div class="modal-buttons">
-                <button id="cancel-exercise-btn" class="modal-cancel-btn">Отмена</button>
-                <button id="confirm-exercise-btn" class="modal-confirm-btn">Принять</button>
-            </div>
-        </div>
-    </div>
+function calculateWindowHeightForMonth(year, month) {
+    const weeks = getWeeksInMonth(year, month);
+    
+    const weekdaysHeight = 45;
+    const dayCellHeight = 48;
+    const padding = 16;
+    
+    const height = weekdaysHeight + (weeks * dayCellHeight) + padding;
+    
+    return height;
+}
 
-        <!-- МЕНЮ ДЛЯ КАРТОЧКИ УПРАЖНЕНИЯ -->
-    <div id="exercise-menu" class="workout-menu">
-        <div class="workout-menu-content">
-            <button id="exercise-menu-edit" class="menu-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white"/>
-                </svg>
-                <span>Изменить</span>
-            </button>
-            <button id="exercise-menu-delete" class="menu-item menu-delete">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
-                </svg>
-                <span>Удалить</span>
-            </button>
-        </div>
-    </div>
+function adjustWindowHeight() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    const calendarWindow = document.getElementById('calendar-window');
+    
+    if (!scrollContainer || !calendarWindow) return;
+    
+    const scrollTop = scrollContainer.scrollTop;
+    let centerMonth = null;
+    
+    for (let i = 0; i < monthsData.length; i++) {
+        const monthElement = monthsData[i].element;
+        const offsetTop = monthElement.offsetTop;
+        const offsetBottom = offsetTop + monthElement.offsetHeight;
+        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
+        
+        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
+            centerMonth = monthsData[i];
+            break;
+        }
+    }
+    
+    if (centerMonth) {
+        const height = calculateWindowHeightForMonth(centerMonth.year, centerMonth.month);
+        calendarWindow.style.height = height + 'px';
+    }
+}
 
-    <!-- МЕНЮ ДЛЯ КАРТОЧКИ УПРАЖНЕНИЯ -->
-    <div id="exercise-menu" class="workout-menu">
-        <div class="workout-menu-content">
-            <button id="exercise-menu-edit" class="menu-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white"/>
-                </svg>
-                <span>Изменить</span>
-            </button>
-            <button id="exercise-menu-delete" class="menu-item menu-delete">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
-                </svg>
-                <span>Удалить</span>
-            </button>
-        </div>
-    </div>
+function generateYearMonths(year) {
+    const monthsContainer = document.getElementById('calendar-months');
+    if (!monthsContainer) return;
+    
+    monthsContainer.innerHTML = '';
+    monthsData = [];
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    for (let month = 0; month < 12; month++) {
+        const monthContainer = document.createElement('div');
+        monthContainer.className = 'month-container';
+        monthContainer.id = `month-${year}-${month}`;
+        
+        const calendarDiv = document.createElement('div');
+        calendarDiv.className = 'calendar';
+        
+        const weekdaysDiv = document.createElement('div');
+        weekdaysDiv.className = 'calendar-weekdays';
+        const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+        weekdays.forEach(day => {
+            const dayDiv = document.createElement('div');
+            dayDiv.textContent = day;
+            weekdaysDiv.appendChild(dayDiv);
+        });
+        
+        const daysDiv = document.createElement('div');
+        daysDiv.className = 'calendar-days';
+        
+        generateMonthDays(year, month, daysDiv);
+        
+        calendarDiv.appendChild(weekdaysDiv);
+        calendarDiv.appendChild(daysDiv);
+        monthContainer.appendChild(calendarDiv);
+        monthsContainer.appendChild(monthContainer);
+        
+        monthsData.push({
+            year: year,
+            month: month,
+            element: monthContainer,
+            weeksCount: getWeeksInMonth(year, month)
+        });
+    }
+    
+    updateMonthHeader();
+    
+    setTimeout(() => {
+        adjustWindowHeight();
+    }, 50);
+}
 
-    <!-- НИЖНЯЯ ПАНЕЛЬ -->
-    <div class="bottom-nav">
-        <button class="nav-btn" id="nav-training" data-page="workout">
-            <img src="assets/icon-training-button.png" alt="Тренировка" class="nav-icon">
-            <span class="nav-label">Тренировка</span>
-        </button>
-        <button class="nav-btn" id="nav-exercises" data-page="exercises">
-            <img src="assets/icon-exercises-button.png" alt="Упражнения" class="nav-icon">
-            <span class="nav-label">Упражнения</span>
-        </button>
-        <button class="nav-btn" id="nav-progress" data-page="progress">
-            <img src="assets/icon-progress-button.png" alt="Прогресс" class="nav-icon">
-            <span class="nav-label">Прогресс</span>
-        </button>
-    </div>
+function generateMonthDays(year, month, container) {
+    const firstDayOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    
+    let startDay = firstDayOfMonth.getDay();
+    startDay = startDay === 0 ? 6 : startDay - 1;
+    
+    container.innerHTML = '';
+    
+    for (let i = 0; i < startDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        emptyDay.textContent = '';
+        container.appendChild(emptyDay);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day;
+        
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        
+        if (day === today.getDate() && 
+            month === today.getMonth() && 
+            year === today.getFullYear()) {
+            dayElement.classList.add('today');
+        }
+        
+        dayElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openWorkoutPage(dateStr);
+        });
+        
+        container.appendChild(dayElement);
+    }
+}
 
-    <script src="script.js"></script>
-    <script src="js/exercise-card.js"></script>
-</body>
-</html>
+function updateMonthHeader() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const monthHeader = document.getElementById('current-month');
+    if (!monthHeader) return;
+    
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    
+    const scrollTop = scrollContainer.scrollTop;
+    let currentMonth = null;
+    let closestDistance = Infinity;
+    
+    for (let i = 0; i < monthsData.length; i++) {
+        const monthElement = monthsData[i].element;
+        const offsetTop = monthElement.offsetTop;
+        const offsetBottom = offsetTop + monthElement.offsetHeight;
+        const viewportCenter = scrollTop + (scrollContainer.clientHeight / 2);
+        
+        if (viewportCenter >= offsetTop && viewportCenter <= offsetBottom) {
+            currentMonth = monthsData[i];
+            break;
+        }
+        
+        const distanceToTop = Math.abs(viewportCenter - offsetTop);
+        const distanceToBottom = Math.abs(viewportCenter - offsetBottom);
+        const minDistance = Math.min(distanceToTop, distanceToBottom);
+        
+        if (minDistance < closestDistance) {
+            closestDistance = minDistance;
+            currentMonth = monthsData[i];
+        }
+    }
+    
+    if (currentMonth) {
+        monthHeader.textContent = `${monthNames[currentMonth.month]} ${currentMonth.year}`;
+        adjustWindowHeight();
+    }
+}
+
+function scrollToCurrentMonth() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (!scrollContainer) return;
+    
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    const monthElement = document.getElementById(`month-${currentYear}-${currentMonth}`);
+    if (monthElement) {
+        const monthElementTop = monthElement.offsetTop;
+        const scrollContainerHeight = scrollContainer.clientHeight;
+        const monthElementHeight = monthElement.offsetHeight;
+        
+        const scrollTo = monthElementTop - (scrollContainerHeight / 2) + (monthElementHeight / 2);
+        
+        scrollContainer.scrollTo({
+            top: Math.max(0, scrollTo),
+            behavior: 'smooth'
+        });
+        
+        setTimeout(() => {
+            updateMonthHeader();
+        }, 300);
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// Добавляем обработчик скролла
+setTimeout(() => {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', () => {
+            updateMonthHeader();
+        });
+    }
+}, 200);
