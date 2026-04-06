@@ -9,13 +9,13 @@ function loadTricepsExercises() {
     if (saved) {
         tricepsExercises = JSON.parse(saved);
     } else {
-        // Начальное упражнение (стандартное, нельзя удалить)
+        // Начальное упражнение (стандартное, НЕТ точек)
         tricepsExercises = [
             {
                 id: 'triceps_001',
                 name: 'Жим от брусьев',
                 image: 'assets/exercises/triceps/images/icon-triceps-001.png',
-                isDefault: true,
+                isDefault: true,      // ← стандартное, нет точек
                 isFavorite: false
             }
         ];
@@ -80,10 +80,11 @@ function renderTricepsExercises() {
     });
     
     // Обработчики для звездочек
-    document.querySelectorAll('#triceps-exercises-list .exercise-favorite-btn').forEach((btn, idx) => {
+    document.querySelectorAll('#triceps-exercises-list .exercise-favorite-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const index = parseInt(btn.closest('.exercise-item').dataset.index);
+            const item = btn.closest('.exercise-item');
+            const index = parseInt(item.dataset.index);
             tricepsExercises[index].isFavorite = !tricepsExercises[index].isFavorite;
             saveTricepsExercises();
             renderTricepsExercises();
@@ -182,7 +183,7 @@ function setupExerciseModal() {
                             id: newId,
                             name: name,
                             image: defaultImage,
-                            isDefault: false,
+                            isDefault: false,   // ← пользовательское, есть точки
                             isFavorite: false
                         });
                         saveTricepsExercises();
