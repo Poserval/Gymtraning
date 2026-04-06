@@ -541,16 +541,6 @@ function setupNavigation() {
         });
     });
     
-    // Обработка нажатий на вкладки упражнений (открытие детальной страницы)
-    const exerciseItems = document.querySelectorAll('.exercise-item');
-    exerciseItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const exerciseName = item.querySelector('.exercise-item-name')?.textContent || 'Упражнение';
-            const exerciseImg = item.querySelector('.exercise-image')?.src || '';
-            openExerciseDetail(exerciseName, exerciseImg);
-        });
-    });
-    
     // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
@@ -659,6 +649,10 @@ function showPage(pageName) {
         if (pageTriceps) pageTriceps.style.display = 'block';
         currentPage = 'triceps';
         localStorage.setItem('lastCategory', 'triceps');
+        // Функция загрузки упражнений теперь в exercise-card.js
+        if (typeof loadTricepsExercises === 'function') {
+            loadTricepsExercises();
+        }
     } else if (pageName === 'chest') {
         if (pageChest) pageChest.style.display = 'block';
         currentPage = 'chest';
@@ -710,7 +704,7 @@ function openWorkoutPage(date) {
     showPage('workout');
 }
 
-// ==================== МОДАЛЬНОЕ ОКНО ====================
+// ==================== МОДАЛЬНОЕ ОКНО ДЛЯ ТРЕНИРОВОК ====================
 
 function setupModal() {
     const addBtn = document.getElementById('add-workout-btn');
