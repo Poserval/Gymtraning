@@ -954,7 +954,8 @@ body::after {
 .exercise-detail-image {
     display: flex;
     justify-content: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    margin-top: -10px;   /* ← добавить эту строку, поднимает картинку */
     padding: 0 16px;
 }
 
