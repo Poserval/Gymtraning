@@ -209,10 +209,12 @@ function setupWorkoutCardMenus() {
 }
 
 function showWorkoutMenu(button, index) {
+    console.log('showWorkoutMenu вызвана, индекс:', index);
     const menu = document.getElementById('workout-menu');
     if (!menu) return;
     
     editingWorkoutIndex = index;
+    console.log('editingWorkoutIndex установлен в:', editingWorkoutIndex);
     const rect = button.getBoundingClientRect();
     
     menu.style.display = 'block';
@@ -236,13 +238,16 @@ function setupWorkoutMenu() {
     const deleteBtn = document.getElementById('menu-delete');
     
     if (editBtn) {
-        editBtn.addEventListener('click', () => {
-            if (editingWorkoutIndex !== null) {
-                closeWorkoutMenu();
-                openEditModal(editingWorkoutIndex);
-            }
-        });
-    }
+    editBtn.addEventListener('click', () => {
+        console.log('editBtn clicked, editingWorkoutIndex =', editingWorkoutIndex);
+        if (editingWorkoutIndex !== null) {
+            closeWorkoutMenu();
+            openEditModal(editingWorkoutIndex);
+        } else {
+            console.log('editingWorkoutIndex is null!');
+        }
+    });
+}
     
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
@@ -282,8 +287,12 @@ function copyWorkout(index) {
 }
 
 function openEditModal(index) {
+    console.log('openEditModal вызвана, индекс:', index);
     const workout = workouts[index];
-    if (!workout) return;
+    if (!workout) {
+        console.log('Тренировка не найдена!');
+        return;
+    }
     
     const modal = document.getElementById('workout-modal');
     const modalTitle = document.getElementById('modal-title');
