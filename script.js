@@ -242,7 +242,6 @@ function setupWorkoutMenu() {
         });
     }
     
-    // Закрытие меню при клике вне
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.workout-menu-btn') && !e.target.closest('#workout-menu')) {
             closeWorkoutMenu();
@@ -296,10 +295,8 @@ function openEditModal(index) {
     if (nameInput) nameInput.value = workout.name;
     if (daySelect) daySelect.value = workout.day;
     
-    // Сохраняем старую функцию
     const oldConfirmHandler = confirmBtn.onclick;
     
-    // Назначаем новую для редактирования
     confirmBtn.onclick = () => {
         const newName = nameInput ? nameInput.value.trim() : '';
         const newDay = daySelect ? daySelect.value : 'any';
@@ -309,7 +306,6 @@ function openEditModal(index) {
             workouts[index].day = newDay;
             saveWorkouts();
             if (modal) modal.style.display = 'none';
-            // Восстанавливаем старую функцию
             confirmBtn.onclick = oldConfirmHandler;
         } else {
             alert('Введите название тренировки');
@@ -545,6 +541,16 @@ function setupNavigation() {
         });
     });
     
+    // Обработка нажатий на вкладки упражнений (открытие детальной страницы)
+    const exerciseItems = document.querySelectorAll('.exercise-item');
+    exerciseItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const exerciseName = item.querySelector('.exercise-item-name')?.textContent || 'Упражнение';
+            const exerciseImg = item.querySelector('.exercise-image')?.src || '';
+            openExerciseDetail(exerciseName, exerciseImg);
+        });
+    });
+    
     // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
@@ -707,6 +713,19 @@ function openWorkoutPage(date) {
     showPage('workout');
 }
 
+function openExerciseDetail(name, imgSrc) {
+    const detailName = document.getElementById('exercise-detail-name');
+    const detailImg = document.getElementById('exercise-detail-img');
+    
+    if (detailName) detailName.textContent = name;
+    if (detailImg) detailImg.src = imgSrc;
+    
+    currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
+    renderSets();
+    
+    showPage('exercise-detail');
+}
+
 // ==================== МОДАЛЬНОЕ ОКНО ====================
 
 function setupModal() {
@@ -718,7 +737,6 @@ function setupModal() {
     const modalTitle = document.getElementById('modal-title');
     const daySelect = document.getElementById('workout-day');
     
-    // Функция для создания новой тренировки
     function createWorkoutHandler() {
         const name = workoutName ? workoutName.value.trim() : '';
         const day = daySelect ? daySelect.value : 'any';
