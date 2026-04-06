@@ -121,16 +121,20 @@
     color: #ffffff;
 }
 
+/* Правая сторона карточки */
 .exercise-item-right {
     flex-shrink: 0;
     margin-left: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .exercise-favorite-btn {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 8px;
+    padding: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -139,6 +143,22 @@
 
 .exercise-favorite-btn:active {
     transform: scale(0.95);
+}
+
+.exercise-menu-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+}
+
+.exercise-menu-btn:active {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .exercise-favorite-btn.active svg path {
