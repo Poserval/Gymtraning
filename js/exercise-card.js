@@ -1,16 +1,232 @@
 // ==================== КАРТОЧКА УПРАЖНЕНИЯ ====================
 let currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
+let tricepsExercises = [];
+
+// Загрузка упражнений трицепса из localStorage
+function loadTricepsExercises() {
+    const saved = localStorage.getItem('triceps_exercises');
+    if (saved) {
+        tricepsExercises = JSON.parse(saved);
+    } else {
+        // Начальное упражнение
+        tricepsExercises = [
+            {
+                id: 'triceps_001',
+                name: 'Жим от брусьев',
+                image: 'assets/exercises/triceps/images/icon-triceps-001.png'
+            }
+        ];
+        saveTricepsExercises();
+    }
+    renderTricepsExercises();
+}
+
+function saveTricepsExercises() {
+    localStorage.setItem('triceps_exercises', JSON.stringify(tricepsExercises));
+}
+
+function renderTricepsExercises() {
+    const container = document.getElementById('triceps-exercises-list');
+    const emptyMessage = document.getElementById('empty-triceps');
+    
+    if (!container) return;
+    
+    if (tricepsExercises.length === 0) {
+        container.style.display = 'none';
+        if (emptyMessage) emptyMessage.style.display = 'block';
+        return;
+    }
+    
+    container.style.display = 'flex';
+    if (emptyMessage) emptyMessage.style.display = 'none';
+    
+    container.innerHTML = tricepsExercises.map((ex, index) => `
+        <div class="exercise-item" data-exercise-id="${ex.id}" data-exercise-name="${ex.name}" data-exercise-img="${ex.image}" data-index="${index}">
+            <div class="exercise-item-left">
+                <img src="${ex.image}" alt="${ex.name}" class="exercise-image" onerror="this.src='assets/icon-desktop-96.png'">
+            </div>
+            <div class="exercise-item-center">
+                <span class="exercise-item-name">${escapeHtml(ex.name)}</span>
+            </div>
+            <div class="exercise-item-right">
+                <button class="exercise-menu-btn" data-index="${index}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="white"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    // Обработчики для карточек
+    document.querySelectorAll('#triceps-exercises-list .exercise-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (!e.target.closest('.exercise-menu-btn')) {
+                const name = item.dataset.exerciseName;
+                const img = item.dataset.exerciseImg;
+                openExerciseDetail(name, img);
+            }
+        });
+    });
+    
+    // Обработчики для кнопок меню (три точки)
+    document.querySelectorAll('#triceps-exercises-list .exercise-menu-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.index);
+            showExerciseMenu(btn, index);
+        });
+    });
+}
+
+// Меню для карточки упражнения
+function showExerciseMenu(button, index) {
+    const menu = document.getElementById('exercise-menu');
+    if (!menu) return;
+    
+    editingExerciseIndex = index;
+    const rect = button.getBoundingClientRect();
+    
+    menu.style.display = 'block';
+    menu.style.position = 'fixed';
+    menu.style.top = rect.bottom + 5 + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+}
+
+function closeExerciseMenu() {
+    const menu = document.getElementById('exercise-menu');
+    if (menu) menu.style.display = 'none';
+    editingExerciseIndex = null;
+}
+
+function editExercise(index) {
+    const exercise = tricepsExercises[index];
+    if (!exercise) return;
+    
+    const modal = document.getElementById('exercise-modal');
+    const modalTitle = document.getElementById('exercise-modal-title');
+    const nameInput = document.getElementById('exercise-name');
+    const confirmBtn = document.getElementById('confirm-exercise-btn');
+    
+    if (modalTitle) modalTitle.textContent = 'Редактировать упражнение';
+    if (nameInput) nameInput.value = exercise.name;
+    
+    const oldConfirmHandler = confirmBtn.onclick;
+    
+    confirmBtn.onclick = () => {
+        const newName = nameInput ? nameInput.value.trim() : '';
+        if (newName) {
+            tricepsExercises[index].name = newName;
+            saveTricepsExercises();
+            renderTricepsExercises();
+            if (modal) modal.style.display = 'none';
+            confirmBtn.onclick = oldConfirmHandler;
+        } else {
+            alert('Введите название упражнения');
+        }
+    };
+    
+    if (modal) modal.style.display = 'flex';
+}
+
+function deleteExercise(index) {
+    if (confirm('Удалить упражнение?')) {
+        tricepsExercises.splice(index, 1);
+        saveTricepsExercises();
+        renderTricepsExercises();
+    }
+}
+
+// Настройка модального окна для упражнений
+function setupExerciseModal() {
+    const addBtn = document.getElementById('add-triceps-exercise-btn');
+    const modal = document.getElementById('exercise-modal');
+    const cancelBtn = document.getElementById('cancel-exercise-btn');
+    const confirmBtn = document.getElementById('confirm-exercise-btn');
+    const nameInput = document.getElementById('exercise-name');
+    const modalTitle = document.getElementById('exercise-modal-title');
+    
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            if (modal) {
+                if (modalTitle) modalTitle.textContent = 'Создать упражнение';
+                if (nameInput) nameInput.value = '';
+                
+                confirmBtn.onclick = () => {
+                    const name = nameInput ? nameInput.value.trim() : '';
+                    if (name) {
+                        const newId = 'triceps_' + Date.now();
+                        const defaultImage = 'assets/icon-desktop-96.png';
+                        tricepsExercises.push({
+                            id: newId,
+                            name: name,
+                            image: defaultImage
+                        });
+                        saveTricepsExercises();
+                        renderTricepsExercises();
+                        if (modal) modal.style.display = 'none';
+                    } else {
+                        alert('Введите название упражнения');
+                    }
+                };
+                
+                modal.style.display = 'flex';
+            }
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            if (modal) modal.style.display = 'none';
+        });
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+}
+
+// Настройка меню карточки упражнения
+function setupExerciseMenu() {
+    const menu = document.getElementById('exercise-menu');
+    const editBtn = document.getElementById('exercise-menu-edit');
+    const deleteBtn = document.getElementById('exercise-menu-delete');
+    
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            if (editingExerciseIndex !== null) {
+                editExercise(editingExerciseIndex);
+                closeExerciseMenu();
+            }
+        });
+    }
+    
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if (editingExerciseIndex !== null) {
+                deleteExercise(editingExerciseIndex);
+                closeExerciseMenu();
+            }
+        });
+    }
+    
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.exercise-menu-btn') && !e.target.closest('#exercise-menu')) {
+            closeExerciseMenu();
+        }
+    });
+}
 
 function setupExerciseDetail() {
     const addSetBtn = document.getElementById('add-set-btn');
     const removeSetBtn = document.getElementById('remove-set-btn');
     
     if (addSetBtn) {
-        // Убираем старые обработчики, чтобы не дублировать
-        const newAddBtn = addSetBtn.cloneNode(true);
-        addSetBtn.parentNode.replaceChild(newAddBtn, addSetBtn);
-        
-        newAddBtn.addEventListener('click', () => {
+        addSetBtn.addEventListener('click', () => {
             const newSetNumber = currentSets.length + 1;
             currentSets.push({ set: newSetNumber, kg: 0, reps: 0, completed: false });
             renderSets();
@@ -18,11 +234,7 @@ function setupExerciseDetail() {
     }
     
     if (removeSetBtn) {
-        // Убираем старые обработчики, чтобы не дублировать
-        const newRemoveBtn = removeSetBtn.cloneNode(true);
-        removeSetBtn.parentNode.replaceChild(newRemoveBtn, removeSetBtn);
-        
-        newRemoveBtn.addEventListener('click', () => {
+        removeSetBtn.addEventListener('click', () => {
             if (currentSets.length > 1) {
                 currentSets.pop();
                 renderSets();
@@ -107,7 +319,6 @@ function renderSets() {
         }
     });
     
-    // Автопрокрутка вниз
     if (setsList) {
         setsList.scrollTop = setsList.scrollHeight;
     }
@@ -116,25 +327,21 @@ function renderSets() {
 function setupFavoriteButtons() {
     const favoriteBtns = document.querySelectorAll('.exercise-favorite-btn');
     favoriteBtns.forEach(btn => {
-        // Убираем старые обработчики
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-        
-        newBtn.addEventListener('click', (e) => {
+        btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isFavorite = newBtn.getAttribute('data-favorite') === 'true';
-            newBtn.setAttribute('data-favorite', (!isFavorite).toString());
+            const isFavorite = btn.getAttribute('data-favorite') === 'true';
+            btn.setAttribute('data-favorite', (!isFavorite).toString());
             
             if (!isFavorite) {
-                newBtn.classList.add('active');
-                const svgPath = newBtn.querySelector('svg path');
+                btn.classList.add('active');
+                const svgPath = btn.querySelector('svg path');
                 if (svgPath) {
                     svgPath.setAttribute('fill', '#ff9800');
                     svgPath.setAttribute('stroke', '#ff9800');
                 }
             } else {
-                newBtn.classList.remove('active');
-                const svgPath = newBtn.querySelector('svg path');
+                btn.classList.remove('active');
+                const svgPath = btn.querySelector('svg path');
                 if (svgPath) {
                     svgPath.setAttribute('fill', 'none');
                     svgPath.setAttribute('stroke', 'white');
@@ -151,7 +358,6 @@ function openExerciseDetail(name, imgSrc) {
     if (detailName) detailName.textContent = name;
     if (detailImg) detailImg.src = imgSrc;
     
-    // Сбрасываем сеты
     currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
     renderSets();
     
@@ -159,8 +365,10 @@ function openExerciseDetail(name, imgSrc) {
 }
 
 // Инициализация при загрузке страницы
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
+    loadTricepsExercises();
+    setupExerciseModal();
+    setupExerciseMenu();
     setupExerciseDetail();
     setupFavoriteButtons();
-    renderSets();
-})
+});
