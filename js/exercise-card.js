@@ -6,7 +6,11 @@ function setupExerciseDetail() {
     const removeSetBtn = document.getElementById('remove-set-btn');
     
     if (addSetBtn) {
-        addSetBtn.addEventListener('click', () => {
+        // Убираем старые обработчики, чтобы не дублировать
+        const newAddBtn = addSetBtn.cloneNode(true);
+        addSetBtn.parentNode.replaceChild(newAddBtn, addSetBtn);
+        
+        newAddBtn.addEventListener('click', () => {
             const newSetNumber = currentSets.length + 1;
             currentSets.push({ set: newSetNumber, kg: 0, reps: 0, completed: false });
             renderSets();
@@ -14,7 +18,11 @@ function setupExerciseDetail() {
     }
     
     if (removeSetBtn) {
-        removeSetBtn.addEventListener('click', () => {
+        // Убираем старые обработчики, чтобы не дублировать
+        const newRemoveBtn = removeSetBtn.cloneNode(true);
+        removeSetBtn.parentNode.replaceChild(newRemoveBtn, removeSetBtn);
+        
+        newRemoveBtn.addEventListener('click', () => {
             if (currentSets.length > 1) {
                 currentSets.pop();
                 renderSets();
@@ -99,6 +107,7 @@ function renderSets() {
         }
     });
     
+    // Автопрокрутка вниз
     if (setsList) {
         setsList.scrollTop = setsList.scrollHeight;
     }
@@ -107,21 +116,25 @@ function renderSets() {
 function setupFavoriteButtons() {
     const favoriteBtns = document.querySelectorAll('.exercise-favorite-btn');
     favoriteBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        // Убираем старые обработчики
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isFavorite = btn.getAttribute('data-favorite') === 'true';
-            btn.setAttribute('data-favorite', (!isFavorite).toString());
+            const isFavorite = newBtn.getAttribute('data-favorite') === 'true';
+            newBtn.setAttribute('data-favorite', (!isFavorite).toString());
             
             if (!isFavorite) {
-                btn.classList.add('active');
-                const svgPath = btn.querySelector('svg path');
+                newBtn.classList.add('active');
+                const svgPath = newBtn.querySelector('svg path');
                 if (svgPath) {
                     svgPath.setAttribute('fill', '#ff9800');
                     svgPath.setAttribute('stroke', '#ff9800');
                 }
             } else {
-                btn.classList.remove('active');
-                const svgPath = btn.querySelector('svg path');
+                newBtn.classList.remove('active');
+                const svgPath = newBtn.querySelector('svg path');
                 if (svgPath) {
                     svgPath.setAttribute('fill', 'none');
                     svgPath.setAttribute('stroke', 'white');
@@ -138,8 +151,16 @@ function openExerciseDetail(name, imgSrc) {
     if (detailName) detailName.textContent = name;
     if (detailImg) detailImg.src = imgSrc;
     
+    // Сбрасываем сеты
     currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
     renderSets();
     
     showPage('exercise-detail');
 }
+
+// Инициализация при загрузке страницы
+document.addEventListener("DOMContentLoaded", () => {
+    setupExerciseDetail();
+    setupFavoriteButtons();
+    renderSets();
+})
