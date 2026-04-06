@@ -208,6 +208,27 @@ function setupWorkoutCardMenus() {
     });
 }
 
+function showWorkoutMenu(button, index) {
+    const menu = document.getElementById('workout-menu');
+    if (!menu) return;
+    
+    editingWorkoutIndex = index;
+    const rect = button.getBoundingClientRect();
+    
+    menu.style.display = 'block';
+    menu.style.position = 'fixed';
+    menu.style.top = rect.bottom + 5 + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+}
+
+function closeWorkoutMenu() {
+    const menu = document.getElementById('workout-menu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
+    editingWorkoutIndex = null;
+}
+
 function setupWorkoutMenu() {
     const menu = document.getElementById('workout-menu');
     const editBtn = document.getElementById('menu-edit');
@@ -249,27 +270,6 @@ function setupWorkoutMenu() {
     });
 }
 
-function showWorkoutMenu(button, index) {
-    const menu = document.getElementById('workout-menu');
-    if (!menu) return;
-    
-    editingWorkoutIndex = index;
-    const rect = button.getBoundingClientRect();
-    
-    menu.style.display = 'block';
-    menu.style.position = 'fixed';
-    menu.style.top = rect.bottom + 5 + 'px';
-    menu.style.right = (window.innerWidth - rect.right) + 'px';
-}
-
-function closeWorkoutMenu() {
-    const menu = document.getElementById('workout-menu');
-    if (menu) {
-        menu.style.display = 'none';
-    }
-    editingWorkoutIndex = null;
-}
-
 function copyWorkout(index) {
     const original = workouts[index];
     const copy = {
@@ -290,29 +290,52 @@ function openEditModal(index) {
     const nameInput = document.getElementById('workout-name');
     const daySelect = document.getElementById('workout-day');
     const confirmBtn = document.getElementById('confirm-workout-btn');
+    const cancelBtn = document.getElementById('cancel-workout-btn');
     
-    if (modalTitle) modalTitle.textContent = 'Редактировать тренировку';
-    if (nameInput) nameInput.value = workout.name;
-    if (daySelect) daySelect.value = workout.day;
+    modalTitle.textContent = 'Редактировать тренировку';
+    nameInput.value = workout.name;
+    daySelect.value = workout.day;
     
-    const oldConfirmHandler = confirmBtn.onclick;
-    
-    confirmBtn.onclick = () => {
-        const newName = nameInput ? nameInput.value.trim() : '';
-        const newDay = daySelect ? daySelect.value : 'any';
+    // Временная функция сохранения
+    const saveHandler = function() {
+        const newName = nameInput.value.trim();
+        const newDay = daySelect.value;
         
         if (newName) {
             workouts[index].name = newName;
             workouts[index].day = newDay;
             saveWorkouts();
-            if (modal) modal.style.display = 'none';
-            confirmBtn.onclick = oldConfirmHandler;
+            modal.style.display = 'none';
+            cleanup();
         } else {
             alert('Введите название тренировки');
         }
     };
     
-    if (modal) modal.style.display = 'flex';
+    // Очистка обработчиков
+    const cleanup = function() {
+        confirmBtn.removeEventListener('click', saveHandler);
+        cancelBtn.removeEventListener('click', cancelHandler);
+        modal.removeEventListener('click', outsideHandler);
+    };
+    
+    const cancelHandler = function() {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    
+    const outsideHandler = function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            cleanup();
+        }
+    };
+    
+    confirmBtn.addEventListener('click', saveHandler);
+    cancelBtn.addEventListener('click', cancelHandler);
+    modal.addEventListener('click', outsideHandler);
+    
+    modal.style.display = 'flex';
 }
 
 function addWorkout(name, day) {
@@ -379,7 +402,6 @@ function hideSplashScreen() {
 // ==================== ФУНКЦИИ НАВИГАЦИИ ====================
 
 function setupNavigation() {
-    // Назад из списка тренировок в календарь
     const backBtn = document.getElementById('back-to-calendar-btn');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
@@ -387,7 +409,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад из деталей тренировки в список тренировок
     const backToWorkoutListBtn = document.getElementById('back-to-workout-list-btn');
     if (backToWorkoutListBtn) {
         backToWorkoutListBtn.addEventListener('click', () => {
@@ -395,7 +416,6 @@ function setupNavigation() {
         });
     }
     
-    // Кнопка "Выбери упражнение" (пока без функционала)
     const addExerciseBtn = document.getElementById('add-exercise-btn');
     if (addExerciseBtn) {
         addExerciseBtn.addEventListener('click', () => {
@@ -403,7 +423,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы упражнений на главный экран
     const backToMainFromExercises = document.getElementById('back-to-main-from-exercises');
     if (backToMainFromExercises) {
         backToMainFromExercises.addEventListener('click', () => {
@@ -411,7 +430,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Трицепс на страницу упражнений
     const backToExercisesFromTriceps = document.getElementById('back-to-exercises-from-triceps');
     if (backToExercisesFromTriceps) {
         backToExercisesFromTriceps.addEventListener('click', () => {
@@ -419,7 +437,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы деталей упражнения на страницу Трицепс
     const backToTricepsFromDetail = document.getElementById('back-to-triceps-from-detail');
     if (backToTricepsFromDetail) {
         backToTricepsFromDetail.addEventListener('click', () => {
@@ -427,7 +444,7 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Грудные
+    // Назад со страницы Грудные и остальных
     const backToExercisesFromChest = document.getElementById('back-to-exercises-from-chest');
     if (backToExercisesFromChest) {
         backToExercisesFromChest.addEventListener('click', () => {
@@ -435,7 +452,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Плечи
     const backToExercisesFromShoulder = document.getElementById('back-to-exercises-from-shoulder');
     if (backToExercisesFromShoulder) {
         backToExercisesFromShoulder.addEventListener('click', () => {
@@ -443,7 +459,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Бицепс
     const backToExercisesFromBiceps = document.getElementById('back-to-exercises-from-biceps');
     if (backToExercisesFromBiceps) {
         backToExercisesFromBiceps.addEventListener('click', () => {
@@ -451,7 +466,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Пресс
     const backToExercisesFromAbs = document.getElementById('back-to-exercises-from-abs');
     if (backToExercisesFromAbs) {
         backToExercisesFromAbs.addEventListener('click', () => {
@@ -459,7 +473,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Спина
     const backToExercisesFromBack = document.getElementById('back-to-exercises-from-back');
     if (backToExercisesFromBack) {
         backToExercisesFromBack.addEventListener('click', () => {
@@ -467,7 +480,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Предплечье
     const backToExercisesFromForearms = document.getElementById('back-to-exercises-from-forearms');
     if (backToExercisesFromForearms) {
         backToExercisesFromForearms.addEventListener('click', () => {
@@ -475,7 +487,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Ноги (верх)
     const backToExercisesFromUpperlegs = document.getElementById('back-to-exercises-from-upperlegs');
     if (backToExercisesFromUpperlegs) {
         backToExercisesFromUpperlegs.addEventListener('click', () => {
@@ -483,7 +494,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Ягодицы
     const backToExercisesFromGlutes = document.getElementById('back-to-exercises-from-glutes');
     if (backToExercisesFromGlutes) {
         backToExercisesFromGlutes.addEventListener('click', () => {
@@ -491,7 +501,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Кардио
     const backToExercisesFromCardio = document.getElementById('back-to-exercises-from-cardio');
     if (backToExercisesFromCardio) {
         backToExercisesFromCardio.addEventListener('click', () => {
@@ -499,7 +508,6 @@ function setupNavigation() {
         });
     }
     
-    // Назад со страницы Ноги (низ)
     const backToExercisesFromLowerlegs = document.getElementById('back-to-exercises-from-lowerlegs');
     if (backToExercisesFromLowerlegs) {
         backToExercisesFromLowerlegs.addEventListener('click', () => {
@@ -507,7 +515,6 @@ function setupNavigation() {
         });
     }
     
-    // Обработка нажатий на категории упражнений
     const exerciseCategories = document.querySelectorAll('.exercise-category');
     exerciseCategories.forEach(category => {
         category.addEventListener('click', () => {
@@ -541,7 +548,6 @@ function setupNavigation() {
         });
     });
     
-    // Обработка нажатий на вкладки упражнений (открытие детальной страницы)
     const exerciseItems = document.querySelectorAll('.exercise-item');
     exerciseItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -551,7 +557,6 @@ function setupNavigation() {
         });
     });
     
-    // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
             e.preventDefault();
@@ -620,7 +625,6 @@ function updateActiveNav(activeId) {
 }
 
 function showPage(pageName) {
-    // Скрываем все страницы
     if (pageCalendar) pageCalendar.style.display = 'none';
     if (pageWorkout) pageWorkout.style.display = 'none';
     if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
@@ -638,7 +642,6 @@ function showPage(pageName) {
     if (pageLowerlegs) pageLowerlegs.style.display = 'none';
     if (pageExerciseDetail) pageExerciseDetail.style.display = 'none';
     
-    // Показываем нужную страницу
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
         currentPage = 'calendar';
@@ -659,9 +662,6 @@ function showPage(pageName) {
         if (pageTriceps) pageTriceps.style.display = 'block';
         currentPage = 'triceps';
         localStorage.setItem('lastCategory', 'triceps');
-        if (typeof loadTricepsExercises === 'function') {
-            loadTricepsExercises();
-        }
     } else if (pageName === 'chest') {
         if (pageChest) pageChest.style.display = 'block';
         currentPage = 'chest';
@@ -720,9 +720,6 @@ function openExerciseDetail(name, imgSrc) {
     if (detailName) detailName.textContent = name;
     if (detailImg) detailImg.src = imgSrc;
     
-    currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
-    renderSets();
-    
     showPage('exercise-detail');
 }
 
@@ -741,37 +738,35 @@ function setupModal() {
         const name = workoutName ? workoutName.value.trim() : '';
         const day = daySelect ? daySelect.value : 'any';
         if (addWorkout(name, day)) {
-            if (modal) modal.style.display = 'none';
+            modal.style.display = 'none';
             renderWorkoutsList();
         }
     }
     
     if (addBtn) {
         addBtn.addEventListener('click', () => {
-            if (modal) {
-                if (modalTitle) modalTitle.textContent = 'Создать тренировку';
-                if (workoutName) workoutName.value = '';
-                if (daySelect) daySelect.value = 'any';
-                
-                confirmBtn.onclick = createWorkoutHandler;
-                modal.style.display = 'flex';
-            }
+            modalTitle.textContent = 'Создать тренировку';
+            workoutName.value = '';
+            daySelect.value = 'any';
+            
+            confirmBtn.onclick = null;
+            confirmBtn.addEventListener('click', createWorkoutHandler);
+            
+            modal.style.display = 'flex';
         });
     }
     
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-            if (modal) modal.style.display = 'none';
+            modal.style.display = 'none';
         });
     }
     
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    }
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 }
 
 // ==================== ФУНКЦИИ КАЛЕНДАРЯ ====================
@@ -1033,7 +1028,6 @@ function escapeHtml(str) {
     });
 }
 
-// Добавляем обработчик скролла
 setTimeout(() => {
     const scrollContainer = document.getElementById('calendar-scroll');
     if (scrollContainer) {
