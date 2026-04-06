@@ -6,21 +6,33 @@ let editingExerciseIndex = null;
 // Загрузка упражнений трицепса из localStorage
 function loadTricepsExercises() {
     const saved = localStorage.getItem('triceps_exercises');
+    
+    // Базовое упражнение, которое нельзя удалить
+    const defaultExercise = {
+        id: 'triceps_001',
+        name: 'Жим от брусьев',
+        image: 'assets/exercises/triceps/images/icon-triceps-001.png',
+        isDefault: true,
+        isFavorite: false
+    };
+    
     if (saved) {
         tricepsExercises = JSON.parse(saved);
+        
+        // Проверяем, есть ли в сохранённых данных дефолтное упражнение
+        const hasDefault = tricepsExercises.some(ex => ex.id === 'triceps_001');
+        
+        if (!hasDefault) {
+            // Если дефолтное упражнение удалили — добавляем его обратно
+            tricepsExercises.unshift(defaultExercise);
+            saveTricepsExercises();
+        }
     } else {
-        // Начальное упражнение (стандартное, НЕТ точек)
-        tricepsExercises = [
-            {
-                id: 'triceps_001',
-                name: 'Жим от брусьев',
-                image: 'assets/exercises/triceps/images/icon-triceps-001.png',
-                isDefault: true,      // ← стандартное, нет точек
-                isFavorite: false
-            }
-        ];
+        // Если данных нет — создаём с дефолтным упражнением
+        tricepsExercises = [defaultExercise];
         saveTricepsExercises();
     }
+    
     renderTricepsExercises();
 }
 
@@ -129,29 +141,57 @@ function editExercise(index) {
     const modalTitle = document.getElementById('exercise-modal-title');
     const nameInput = document.getElementById('exercise-name');
     const confirmBtn = document.getElementById('confirm-exercise-btn');
+    const cancelBtn = document.getElementById('cancel-exercise-btn');
     
-    if (modalTitle) modalTitle.textContent = 'Редактировать упражнение';
-    if (nameInput) nameInput.value = exercise.name;
+    modalTitle.textContent = 'Редактировать упражнение';
+    nameInput.value = exercise.name;
     
-    const oldConfirmHandler = confirmBtn.onclick;
-    
-    confirmBtn.onclick = () => {
-        const newName = nameInput ? nameInput.value.trim() : '';
+    // Временная функция сохранения
+    const saveHandler = function() {
+        const newName = nameInput.value.trim();
         if (newName) {
             tricepsExercises[index].name = newName;
             saveTricepsExercises();
             renderTricepsExercises();
-            if (modal) modal.style.display = 'none';
-            confirmBtn.onclick = oldConfirmHandler;
+            modal.style.display = 'none';
+            cleanup();
         } else {
             alert('Введите название упражнения');
         }
     };
     
-    if (modal) modal.style.display = 'flex';
+    // Очистка обработчиков
+    const cleanup = function() {
+        confirmBtn.removeEventListener('click', saveHandler);
+        cancelBtn.removeEventListener('click', cancelHandler);
+        modal.removeEventListener('click', outsideHandler);
+    };
+    
+    const cancelHandler = function() {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    
+    const outsideHandler = function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            cleanup();
+        }
+    };
+    
+    confirmBtn.addEventListener('click', saveHandler);
+    cancelBtn.addEventListener('click', cancelHandler);
+    modal.addEventListener('click', outsideHandler);
+    
+    modal.style.display = 'flex';
 }
 
 function deleteExercise(index) {
+    const exercise = tricepsExercises[index];
+    if (exercise.isDefault) {
+        alert('Это стандартное упражнение, его нельзя удалить');
+        return;
+    }
     if (confirm('Удалить упражнение?')) {
         tricepsExercises.splice(index, 1);
         saveTricepsExercises();
@@ -171,11 +211,12 @@ function setupExerciseModal() {
     if (addBtn) {
         addBtn.addEventListener('click', () => {
             if (modal) {
-                if (modalTitle) modalTitle.textContent = 'Создать упражнение';
-                if (nameInput) nameInput.value = '';
+                modalTitle.textContent = 'Создать упражнение';
+                nameInput.value = '';
                 
-                confirmBtn.onclick = () => {
-                    const name = nameInput ? nameInput.value.trim() : '';
+                // Временная функция сохранения
+                const saveHandler = function() {
+                    const name = nameInput.value.trim();
                     if (name) {
                         const newId = 'triceps_' + Date.now();
                         const defaultImage = 'assets/icon-desktop-96.png';
@@ -183,16 +224,40 @@ function setupExerciseModal() {
                             id: newId,
                             name: name,
                             image: defaultImage,
-                            isDefault: false,   // ← пользовательское, есть точки
+                            isDefault: false,
                             isFavorite: false
                         });
                         saveTricepsExercises();
                         renderTricepsExercises();
-                        if (modal) modal.style.display = 'none';
+                        modal.style.display = 'none';
+                        cleanup();
                     } else {
                         alert('Введите название упражнения');
                     }
                 };
+                
+                // Очистка обработчиков
+                const cleanup = function() {
+                    confirmBtn.removeEventListener('click', saveHandler);
+                    cancelBtn.removeEventListener('click', cancelHandler);
+                    modal.removeEventListener('click', outsideHandler);
+                };
+                
+                const cancelHandler = function() {
+                    modal.style.display = 'none';
+                    cleanup();
+                };
+                
+                const outsideHandler = function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                        cleanup();
+                    }
+                };
+                
+                confirmBtn.addEventListener('click', saveHandler);
+                cancelBtn.addEventListener('click', cancelHandler);
+                modal.addEventListener('click', outsideHandler);
                 
                 modal.style.display = 'flex';
             }
@@ -201,7 +266,7 @@ function setupExerciseModal() {
     
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-            if (modal) modal.style.display = 'none';
+            modal.style.display = 'none';
         });
     }
     
@@ -223,8 +288,9 @@ function setupExerciseMenu() {
     if (editBtn) {
         editBtn.addEventListener('click', () => {
             if (editingExerciseIndex !== null) {
-                editExercise(editingExerciseIndex);
+                const indexToEdit = editingExerciseIndex;
                 closeExerciseMenu();
+                editExercise(indexToEdit);
             }
         });
     }
@@ -232,8 +298,9 @@ function setupExerciseMenu() {
     if (deleteBtn) {
         deleteBtn.addEventListener('click', () => {
             if (editingExerciseIndex !== null) {
-                deleteExercise(editingExerciseIndex);
+                const indexToDelete = editingExerciseIndex;
                 closeExerciseMenu();
+                deleteExercise(indexToDelete);
             }
         });
     }
