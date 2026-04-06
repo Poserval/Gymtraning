@@ -789,10 +789,10 @@ function renderSets() {
     setsList.innerHTML = currentSets.map((set, index) => `
         <div class="set-row" data-index="${index}">
             <div class="set-number">${set.set}</div>
-            <input type="number" class="set-input set-kg" value="${set.kg}" placeholder="0" step="0.5">
-            <input type="number" class="set-input set-reps" value="${set.reps}" placeholder="0" step="1">
+            <input type="number" class="set-input set-kg" value="${set.kg === 0 ? '' : set.kg}" placeholder="0" step="0.5">
+            <input type="number" class="set-input set-reps" value="${set.reps === 0 ? '' : set.reps}" placeholder="0" step="1">
             <div class="set-checkbox">
-                <input type="checkbox" class="set-completed" ${set.completed ? 'checked' : ''}>
+                <input type="checkbox" class="set-completed" ${set.completed ? 'checked' : ''} ${(set.kg === 0 || set.reps === 0) ? 'disabled' : ''}>
             </div>
         </div>
     `).join('');
@@ -803,25 +803,59 @@ function renderSets() {
         const completedCheckbox = row.querySelector('.set-completed');
         
         if (kgInput) {
-            kgInput.addEventListener('change', (e) => {
-                currentSets[idx].kg = parseFloat(e.target.value) || 0;
+            kgInput.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (value.startsWith('0') && value.length > 1) {
+                    value = value.replace(/^0+/, '');
+                    e.target.value = value;
+                }
+                currentSets[idx].kg = parseFloat(value) || 0;
+                
+                if (completedCheckbox) {
+                    const kgValid = currentSets[idx].kg > 0;
+                    const repsValid = currentSets[idx].reps > 0;
+                    completedCheckbox.disabled = !(kgValid && repsValid);
+                    if (completedCheckbox.disabled) {
+                        completedCheckbox.checked = false;
+                        currentSets[idx].completed = false;
+                    }
+                }
             });
         }
         
         if (repsInput) {
-            repsInput.addEventListener('change', (e) => {
-                currentSets[idx].reps = parseInt(e.target.value) || 0;
+            repsInput.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (value.startsWith('0') && value.length > 1) {
+                    value = value.replace(/^0+/, '');
+                    e.target.value = value;
+                }
+                currentSets[idx].reps = parseInt(value) || 0;
+                
+                if (completedCheckbox) {
+                    const kgValid = currentSets[idx].kg > 0;
+                    const repsValid = currentSets[idx].reps > 0;
+                    completedCheckbox.disabled = !(kgValid && repsValid);
+                    if (completedCheckbox.disabled) {
+                        completedCheckbox.checked = false;
+                        currentSets[idx].completed = false;
+                    }
+                }
             });
         }
         
         if (completedCheckbox) {
             completedCheckbox.addEventListener('change', (e) => {
-                currentSets[idx].completed = e.target.checked;
+                if (!completedCheckbox.disabled) {
+                    currentSets[idx].completed = e.target.checked;
+                } else {
+                    e.target.checked = false;
+                    alert('Заполните вес и количество повторений');
+                }
             });
         }
     });
     
-    // Автопрокрутка вниз после добавления нового сета
     if (setsList) {
         setsList.scrollTop = setsList.scrollHeight;
     }
