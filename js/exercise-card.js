@@ -1,6 +1,7 @@
 // ==================== КАРТОЧКА УПРАЖНЕНИЯ ====================
 let currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
 let tricepsExercises = [];
+let editingExerciseIndex = null;
 
 // Загрузка упражнений трицепса из localStorage
 function loadTricepsExercises() {
@@ -8,12 +9,14 @@ function loadTricepsExercises() {
     if (saved) {
         tricepsExercises = JSON.parse(saved);
     } else {
-        // Начальное упражнение
+        // Начальное упражнение (стандартное, нельзя удалить)
         tricepsExercises = [
             {
                 id: 'triceps_001',
                 name: 'Жим от брусьев',
-                image: 'assets/exercises/triceps/images/icon-triceps-001.png'
+                image: 'assets/exercises/triceps/images/icon-triceps-001.png',
+                isDefault: true,
+                isFavorite: false
             }
         ];
         saveTricepsExercises();
@@ -49,11 +52,18 @@ function renderTricepsExercises() {
                 <span class="exercise-item-name">${escapeHtml(ex.name)}</span>
             </div>
             <div class="exercise-item-right">
+                <button class="exercise-favorite-btn" data-favorite="${ex.isFavorite ? 'true' : 'false'}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="${ex.isFavorite ? '#ff9800' : 'none'}" stroke="${ex.isFavorite ? '#ff9800' : 'white'}" stroke-width="1.5"/>
+                    </svg>
+                </button>
+                ${!ex.isDefault ? `
                 <button class="exercise-menu-btn" data-index="${index}">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="white"/>
                     </svg>
                 </button>
+                ` : ''}
             </div>
         </div>
     `).join('');
@@ -61,7 +71,7 @@ function renderTricepsExercises() {
     // Обработчики для карточек
     document.querySelectorAll('#triceps-exercises-list .exercise-item').forEach(item => {
         item.addEventListener('click', (e) => {
-            if (!e.target.closest('.exercise-menu-btn')) {
+            if (!e.target.closest('.exercise-menu-btn') && !e.target.closest('.exercise-favorite-btn')) {
                 const name = item.dataset.exerciseName;
                 const img = item.dataset.exerciseImg;
                 openExerciseDetail(name, img);
@@ -69,7 +79,18 @@ function renderTricepsExercises() {
         });
     });
     
-    // Обработчики для кнопок меню (три точки)
+    // Обработчики для звездочек
+    document.querySelectorAll('#triceps-exercises-list .exercise-favorite-btn').forEach((btn, idx) => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.closest('.exercise-item').dataset.index);
+            tricepsExercises[index].isFavorite = !tricepsExercises[index].isFavorite;
+            saveTricepsExercises();
+            renderTricepsExercises();
+        });
+    });
+    
+    // Обработчики для кнопок меню (три точки) — только у пользовательских упражнений
     document.querySelectorAll('#triceps-exercises-list .exercise-menu-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -160,7 +181,9 @@ function setupExerciseModal() {
                         tricepsExercises.push({
                             id: newId,
                             name: name,
-                            image: defaultImage
+                            image: defaultImage,
+                            isDefault: false,
+                            isFavorite: false
                         });
                         saveTricepsExercises();
                         renderTricepsExercises();
@@ -324,33 +347,6 @@ function renderSets() {
     }
 }
 
-function setupFavoriteButtons() {
-    const favoriteBtns = document.querySelectorAll('.exercise-favorite-btn');
-    favoriteBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isFavorite = btn.getAttribute('data-favorite') === 'true';
-            btn.setAttribute('data-favorite', (!isFavorite).toString());
-            
-            if (!isFavorite) {
-                btn.classList.add('active');
-                const svgPath = btn.querySelector('svg path');
-                if (svgPath) {
-                    svgPath.setAttribute('fill', '#ff9800');
-                    svgPath.setAttribute('stroke', '#ff9800');
-                }
-            } else {
-                btn.classList.remove('active');
-                const svgPath = btn.querySelector('svg path');
-                if (svgPath) {
-                    svgPath.setAttribute('fill', 'none');
-                    svgPath.setAttribute('stroke', 'white');
-                }
-            }
-        });
-    });
-}
-
 function openExerciseDetail(name, imgSrc) {
     const detailName = document.getElementById('exercise-detail-name');
     const detailImg = document.getElementById('exercise-detail-img');
@@ -364,11 +360,20 @@ function openExerciseDetail(name, imgSrc) {
     showPage('exercise-detail');
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     loadTricepsExercises();
     setupExerciseModal();
     setupExerciseMenu();
     setupExerciseDetail();
-    setupFavoriteButtons();
 });
