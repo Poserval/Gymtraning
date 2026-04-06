@@ -955,7 +955,7 @@ body::after {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
-    margin-top: -10px;
+    margin-top: 0px;
     padding: 0 16px;
 }
 
