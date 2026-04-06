@@ -247,22 +247,7 @@
             </div>
             <div class="exercises-detail-content">
                 <div id="triceps-exercises-list" class="exercises-detail-list">
-                    <!-- Прямая вставка карточки -->
-                    <div class="exercise-item" data-exercise-id="triceps_001" data-exercise-name="Жим от брусьев" data-exercise-img="assets/exercises/triceps/images/icon-triceps-001.png">
-                        <div class="exercise-item-left">
-                            <img src="assets/exercises/triceps/images/icon-triceps-001.png" alt="Жим от брусьев" class="exercise-image" onerror="this.src='assets/icon-desktop-192.png'">
-                        </div>
-                        <div class="exercise-item-center">
-                            <span class="exercise-item-name">Жим от брусьев</span>
-                        </div>
-                        <div class="exercise-item-right">
-                            <button class="exercise-favorite-btn" data-favorite="false">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" fill="none" stroke="white" stroke-width="1.5"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Список упражнений будет загружен через JavaScript -->
                 </div>
                 <div id="empty-triceps" class="empty-exercises-detail" style="display: none;">
                     <p>Нет упражнений для трицепса</p>
@@ -637,7 +622,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО -->
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ТРЕНИРОВОК -->
     <div id="workout-modal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title">Создать тренировку</h3>
@@ -668,7 +653,7 @@
         </div>
     </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО ДЛЯ СОЗДАНИЯ УПРАЖНЕНИЯ -->
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ СОЗДАНИЯ УПРАЖНЕНИЯ -->
     <div id="exercise-modal" class="modal">
         <div class="modal-content">
             <h3 id="exercise-modal-title">Создать упражнение</h3>
@@ -683,7 +668,7 @@
         </div>
     </div>
 
-    <!-- МЕНЮ ДЛЯ КАРТОЧКИ -->
+    <!-- МЕНЮ ДЛЯ КАРТОЧКИ ТРЕНИРОВКИ -->
     <div id="workout-menu" class="workout-menu">
         <div class="workout-menu-content">
             <button id="menu-edit" class="menu-item">
@@ -699,6 +684,24 @@
                 <span>Копия</span>
             </button>
             <button id="menu-delete" class="menu-item menu-delete">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
+                </svg>
+                <span>Удалить</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- МЕНЮ ДЛЯ КАРТОЧКИ УПРАЖНЕНИЯ -->
+    <div id="exercise-menu" class="workout-menu">
+        <div class="workout-menu-content">
+            <button id="exercise-menu-edit" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white"/>
+                </svg>
+                <span>Изменить</span>
+            </button>
+            <button id="exercise-menu-delete" class="menu-item menu-delete">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
                 </svg>
