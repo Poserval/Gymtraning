@@ -242,6 +242,7 @@ function setupWorkoutMenu() {
         });
     }
     
+    // Закрытие меню при клике вне
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.workout-menu-btn') && !e.target.closest('#workout-menu')) {
             closeWorkoutMenu();
