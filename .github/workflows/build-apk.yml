@@ -29,6 +29,8 @@ jobs:
         mkdir -p capacitor-web
         cp index.html style.css script.js manifest.json capacitor-web/
         cp -r assets capacitor-web/assets/
+        cp -r css capacitor-web/css/
+        cp -r js capacitor-web/js/
         
     - name: Generate Android project
       run: npx cap add android && npx cap sync android
