@@ -38,25 +38,32 @@ const pageExerciseDetail = document.getElementById('page-exercise-detail');
 async function loadWorkoutList() {
     if (workoutListLoaded) return;
     try {
-        let response = await fetch('pages/workout-list.html');
+        const response = await fetch('pages/workout-list.html');
         if (!response.ok) {
-            response = await fetch('./pages/workout-list.html');
+            throw new Error('Файл не найден');
         }
         const html = await response.text();
         const container = document.getElementById('page-workout');
         if (container) {
             container.innerHTML = html;
             workoutListLoaded = true;
-            setTimeout(() => {
-                attachWorkoutListHandlers();
-            }, 50);
+            // После загрузки пересоздаём обработчики
+            attachWorkoutListHandlers();
         }
     } catch (error) {
         console.error('Ошибка загрузки страницы тренировок:', error);
+        // Показываем заглушку
+        const container = document.getElementById('page-workout');
+        if (container) {
+            container.innerHTML = '<div class="workout-container"><div class="workout-header"><button id="back-to-calendar-btn" class="back-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/></svg></button><h2>Создай тренировку</h2><button id="add-workout-btn" class="add-workout-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/></svg></button></div><div class="workout-content"><div id="workouts-list" class="workouts-list"></div><div id="empty-workouts" class="workout-placeholder"><p>Нет созданных тренировок</p><p style="margin-top: 20px; color: #888;">Нажмите + чтобы создать тренировку</p></div></div></div>';
+            workoutListLoaded = true;
+            attachWorkoutListHandlers();
+        }
     }
 }
 
 function attachWorkoutListHandlers() {
+    // Обработчик кнопки "Назад"
     const backBtn = document.getElementById('back-to-calendar-btn');
     if (backBtn) {
         const newBackBtn = backBtn.cloneNode(true);
@@ -66,6 +73,7 @@ function attachWorkoutListHandlers() {
         });
     }
     
+    // Обработчик кнопки "Добавить тренировку"
     const addBtn = document.getElementById('add-workout-btn');
     if (addBtn) {
         const newAddBtn = addBtn.cloneNode(true);
@@ -96,6 +104,7 @@ function attachWorkoutListHandlers() {
         });
     }
     
+    // Перерисовываем список тренировок
     renderWorkoutsList();
 }
 
@@ -103,18 +112,16 @@ function attachWorkoutListHandlers() {
 async function loadExercisesGrid() {
     if (exercisesGridLoaded) return;
     try {
-        let response = await fetch('pages/exercises-grid.html');
+        const response = await fetch('pages/exercises-grid.html');
         if (!response.ok) {
-            response = await fetch('./pages/exercises-grid.html');
+            throw new Error('Файл не найден');
         }
         const html = await response.text();
         const container = document.getElementById('page-exercises');
         if (container) {
             container.innerHTML = html;
             exercisesGridLoaded = true;
-            setTimeout(() => {
-                attachExerciseCategoryHandlers();
-            }, 50);
+            attachExerciseCategoryHandlers();
         }
     } catch (error) {
         console.error('Ошибка загрузки страницы упражнений:', error);
@@ -122,9 +129,7 @@ async function loadExercisesGrid() {
         if (container) {
             container.innerHTML = '<div class="exercises-container"><div class="exercises-header"><button id="back-to-main-from-exercises" class="back-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/></svg></button><h2>Упражнения</h2><div style="width: 40px;"></div></div><div class="exercises-content"><div class="exercises-grid"><div class="exercise-category" data-category="triceps"><div class="category-icon"><img src="assets/icon-exercises-triceps.png" alt="Трицепс"></div><span class="category-name">Трицепс</span></div><div class="exercise-category" data-category="chest"><div class="category-icon"><img src="assets/icon-exercises-chest.png" alt="Грудные"></div><span class="category-name">Грудные</span></div><div class="exercise-category" data-category="shoulder"><div class="category-icon"><img src="assets/icon-exercises-shoulder.png" alt="Плечи"></div><span class="category-name">Плечи</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="biceps"><div class="category-icon"><img src="assets/icon-exercises-biceps.png" alt="Бицепс"></div><span class="category-name">Бицепс</span></div><div class="exercise-category" data-category="abs"><div class="category-icon"><img src="assets/icon-exercises-abs.png" alt="Пресс"></div><span class="category-name">Пресс</span></div><div class="exercise-category" data-category="back"><div class="category-icon"><img src="assets/icon-exercises-back.png" alt="Спина"></div><span class="category-name">Спина</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="forearms"><div class="category-icon"><img src="assets/icon-exercises-forearms.png" alt="Предплечье"></div><span class="category-name">Предплечье</span></div><div class="exercise-category" data-category="upperlegs"><div class="category-icon"><img src="assets/icon-exercises-upperlegs.png" alt="Ноги (верх)"></div><span class="category-name">Ноги (верх)</span></div><div class="exercise-category" data-category="glutes"><div class="category-icon"><img src="assets/icon-exercises-glutes.png" alt="Ягодицы"></div><span class="category-name">Ягодицы</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="cardio"><div class="category-icon"><img src="assets/icon-exercises-cardio.png" alt="Кардио"></div><span class="category-name">Кардио</span></div><div class="exercise-category" data-category="lowerlegs"><div class="category-icon"><img src="assets/icon-exercises-lowerlegs.png" alt="Ноги (низ)"></div><span class="category-name">Ноги (низ)</span></div><div class="exercise-category" data-category="all"><div class="category-icon"><img src="assets/icon-exercises-all.png" alt="Все"></div><span class="category-name">Все</span></div></div></div></div>';
             exercisesGridLoaded = true;
-            setTimeout(() => {
-                attachExerciseCategoryHandlers();
-            }, 50);
+            attachExerciseCategoryHandlers();
         }
     }
 }
