@@ -12,6 +12,10 @@ let editingWorkoutIndex = null;
 let dragStartIndex = null;
 let currentWorkoutIndex = null;
 
+// Флаги загрузки страниц
+let exercisesGridLoaded = false;
+let workoutListLoaded = false;
+
 // Элементы страниц
 const pageCalendar = document.getElementById('page-calendar');
 const pageWorkout = document.getElementById('page-workout');
@@ -30,36 +34,97 @@ const pageCardio = document.getElementById('page-cardio');
 const pageLowerlegs = document.getElementById('page-lowerlegs');
 const pageExerciseDetail = document.getElementById('page-exercise-detail');
 
-// Флаг загрузки сетки упражнений
-let exercisesGridLoaded = false;
-let exercisesGridHtml = null;
+// ==================== ЗАГРУЗКА СТРАНИЦЫ ТРЕНИРОВОК ====================
+async function loadWorkoutList() {
+    if (workoutListLoaded) return;
+    try {
+        let response = await fetch('pages/workout-list.html');
+        if (!response.ok) {
+            response = await fetch('./pages/workout-list.html');
+        }
+        const html = await response.text();
+        const container = document.getElementById('page-workout');
+        if (container) {
+            container.innerHTML = html;
+            workoutListLoaded = true;
+            setTimeout(() => {
+                attachWorkoutListHandlers();
+            }, 50);
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки страницы тренировок:', error);
+    }
+}
 
-// ==================== ЗАГРУЗКА СТРАНИЦЫ УПРАЖНЕНИЙ ====================
+function attachWorkoutListHandlers() {
+    const backBtn = document.getElementById('back-to-calendar-btn');
+    if (backBtn) {
+        const newBackBtn = backBtn.cloneNode(true);
+        backBtn.parentNode.replaceChild(newBackBtn, backBtn);
+        newBackBtn.addEventListener('click', () => {
+            showPage('calendar');
+        });
+    }
+    
+    const addBtn = document.getElementById('add-workout-btn');
+    if (addBtn) {
+        const newAddBtn = addBtn.cloneNode(true);
+        addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+        newAddBtn.addEventListener('click', () => {
+            const modal = document.getElementById('workout-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const nameInput = document.getElementById('workout-name');
+            const daySelect = document.getElementById('workout-day');
+            const confirmBtn = document.getElementById('confirm-workout-btn');
+            
+            modalTitle.textContent = 'Создать тренировку';
+            nameInput.value = '';
+            daySelect.value = 'any';
+            
+            const createHandler = function() {
+                const name = nameInput.value.trim();
+                const day = daySelect.value;
+                if (addWorkout(name, day)) {
+                    modal.style.display = 'none';
+                    renderWorkoutsList();
+                }
+            };
+            
+            confirmBtn.onclick = null;
+            confirmBtn.addEventListener('click', createHandler);
+            modal.style.display = 'flex';
+        });
+    }
+    
+    renderWorkoutsList();
+}
+
+// ==================== ЗАГРУЗКА СТРАНИЦЫ УПРАЖНЕНИЙ (СЕТКА ГРУПП) ====================
 async function loadExercisesGrid() {
     if (exercisesGridLoaded) return;
     try {
-        // Пробуем разные варианты пути
         let response = await fetch('pages/exercises-grid.html');
         if (!response.ok) {
             response = await fetch('./pages/exercises-grid.html');
         }
         const html = await response.text();
-        exercisesGridHtml = html;
         const container = document.getElementById('page-exercises');
         if (container) {
             container.innerHTML = html;
             exercisesGridLoaded = true;
-            // После загрузки пересоздаём обработчики
-            attachExerciseCategoryHandlers();
+            setTimeout(() => {
+                attachExerciseCategoryHandlers();
+            }, 50);
         }
     } catch (error) {
         console.error('Ошибка загрузки страницы упражнений:', error);
-        // Если файл не найден, показываем заглушку
         const container = document.getElementById('page-exercises');
         if (container) {
             container.innerHTML = '<div class="exercises-container"><div class="exercises-header"><button id="back-to-main-from-exercises" class="back-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/></svg></button><h2>Упражнения</h2><div style="width: 40px;"></div></div><div class="exercises-content"><div class="exercises-grid"><div class="exercise-category" data-category="triceps"><div class="category-icon"><img src="assets/icon-exercises-triceps.png" alt="Трицепс"></div><span class="category-name">Трицепс</span></div><div class="exercise-category" data-category="chest"><div class="category-icon"><img src="assets/icon-exercises-chest.png" alt="Грудные"></div><span class="category-name">Грудные</span></div><div class="exercise-category" data-category="shoulder"><div class="category-icon"><img src="assets/icon-exercises-shoulder.png" alt="Плечи"></div><span class="category-name">Плечи</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="biceps"><div class="category-icon"><img src="assets/icon-exercises-biceps.png" alt="Бицепс"></div><span class="category-name">Бицепс</span></div><div class="exercise-category" data-category="abs"><div class="category-icon"><img src="assets/icon-exercises-abs.png" alt="Пресс"></div><span class="category-name">Пресс</span></div><div class="exercise-category" data-category="back"><div class="category-icon"><img src="assets/icon-exercises-back.png" alt="Спина"></div><span class="category-name">Спина</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="forearms"><div class="category-icon"><img src="assets/icon-exercises-forearms.png" alt="Предплечье"></div><span class="category-name">Предплечье</span></div><div class="exercise-category" data-category="upperlegs"><div class="category-icon"><img src="assets/icon-exercises-upperlegs.png" alt="Ноги (верх)"></div><span class="category-name">Ноги (верх)</span></div><div class="exercise-category" data-category="glutes"><div class="category-icon"><img src="assets/icon-exercises-glutes.png" alt="Ягодицы"></div><span class="category-name">Ягодицы</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="cardio"><div class="category-icon"><img src="assets/icon-exercises-cardio.png" alt="Кардио"></div><span class="category-name">Кардио</span></div><div class="exercise-category" data-category="lowerlegs"><div class="category-icon"><img src="assets/icon-exercises-lowerlegs.png" alt="Ноги (низ)"></div><span class="category-name">Ноги (низ)</span></div><div class="exercise-category" data-category="all"><div class="category-icon"><img src="assets/icon-exercises-all.png" alt="Все"></div><span class="category-name">Все</span></div></div></div></div>';
             exercisesGridLoaded = true;
-            attachExerciseCategoryHandlers();
+            setTimeout(() => {
+                attachExerciseCategoryHandlers();
+            }, 50);
         }
     }
 }
@@ -68,7 +133,6 @@ function attachExerciseCategoryHandlers() {
     setTimeout(() => {
         const exerciseCategories = document.querySelectorAll('.exercise-category');
         exerciseCategories.forEach(category => {
-            // Удаляем старые обработчики, чтобы не было дублирования
             const newCategory = category.cloneNode(true);
             category.parentNode.replaceChild(newCategory, category);
             newCategory.addEventListener('click', (e) => {
@@ -102,7 +166,6 @@ function attachExerciseCategoryHandlers() {
             });
         });
         
-        // Обработчик кнопки "Назад" на странице упражнений
         const backBtn = document.getElementById('back-to-main-from-exercises');
         if (backBtn) {
             const newBackBtn = backBtn.cloneNode(true);
@@ -485,13 +548,6 @@ function hideSplashScreen() {
 // ==================== ФУНКЦИИ НАВИГАЦИИ ====================
 
 function setupNavigation() {
-    const backBtn = document.getElementById('back-to-calendar-btn');
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            showPage('calendar');
-        });
-    }
-    
     const backToWorkoutListBtn = document.getElementById('back-to-workout-list-btn');
     if (backToWorkoutListBtn) {
         backToWorkoutListBtn.addEventListener('click', () => {
@@ -619,7 +675,8 @@ function setupBottomNav() {
     const navProgress = document.getElementById('nav-progress');
     
     if (navTraining) {
-        navTraining.addEventListener('click', () => {
+        navTraining.addEventListener('click', async () => {
+            await loadWorkoutList();
             showPage('workout');
             updateActiveNav('nav-training');
         });
@@ -681,7 +738,9 @@ function showPage(pageName) {
         currentPage = 'calendar';
         updateActiveNav('nav-training');
     } else if (pageName === 'workout') {
-        if (pageWorkout) pageWorkout.style.display = 'block';
+        if (pageWorkout) {
+            pageWorkout.style.display = 'block';
+        }
         currentPage = 'workout';
         updateActiveNav('nav-training');
         renderWorkoutsList();
@@ -762,35 +821,8 @@ function openExerciseDetail(name, imgSrc) {
 // ==================== МОДАЛЬНОЕ ОКНО ====================
 
 function setupModal() {
-    const addBtn = document.getElementById('add-workout-btn');
     const modal = document.getElementById('workout-modal');
     const cancelBtn = document.getElementById('cancel-workout-btn');
-    const confirmBtn = document.getElementById('confirm-workout-btn');
-    const workoutName = document.getElementById('workout-name');
-    const modalTitle = document.getElementById('modal-title');
-    const daySelect = document.getElementById('workout-day');
-    
-    function createWorkoutHandler() {
-        const name = workoutName ? workoutName.value.trim() : '';
-        const day = daySelect ? daySelect.value : 'any';
-        if (addWorkout(name, day)) {
-            modal.style.display = 'none';
-            renderWorkoutsList();
-        }
-    }
-    
-    if (addBtn) {
-        addBtn.addEventListener('click', () => {
-            modalTitle.textContent = 'Создать тренировку';
-            workoutName.value = '';
-            daySelect.value = 'any';
-            
-            confirmBtn.onclick = null;
-            confirmBtn.addEventListener('click', createWorkoutHandler);
-            
-            modal.style.display = 'flex';
-        });
-    }
     
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
