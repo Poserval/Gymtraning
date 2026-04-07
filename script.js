@@ -30,6 +30,59 @@ const pageCardio = document.getElementById('page-cardio');
 const pageLowerlegs = document.getElementById('page-lowerlegs');
 const pageExerciseDetail = document.getElementById('page-exercise-detail');
 
+// Флаг загрузки сетки упражнений
+let exercisesGridLoaded = false;
+
+// ==================== ЗАГРУЗКА СТРАНИЦЫ УПРАЖНЕНИЙ ====================
+async function loadExercisesGrid() {
+    if (exercisesGridLoaded) return;
+    try {
+        const response = await fetch('pages/exercises-grid.html');
+        const html = await response.text();
+        const container = document.getElementById('page-exercises');
+        if (container) {
+            container.innerHTML = html;
+            exercisesGridLoaded = true;
+            // После загрузки нужно пересоздать обработчики для категорий
+            setTimeout(() => {
+                const exerciseCategories = document.querySelectorAll('.exercise-category');
+                exerciseCategories.forEach(category => {
+                    category.addEventListener('click', () => {
+                        const categoryData = category.getAttribute('data-category');
+                        if (categoryData === 'triceps') {
+                            showPage('triceps');
+                        } else if (categoryData === 'chest') {
+                            showPage('chest');
+                        } else if (categoryData === 'shoulder') {
+                            showPage('shoulder');
+                        } else if (categoryData === 'biceps') {
+                            showPage('biceps');
+                        } else if (categoryData === 'abs') {
+                            showPage('abs');
+                        } else if (categoryData === 'back') {
+                            showPage('back');
+                        } else if (categoryData === 'forearms') {
+                            showPage('forearms');
+                        } else if (categoryData === 'upperlegs') {
+                            showPage('upperlegs');
+                        } else if (categoryData === 'glutes') {
+                            showPage('glutes');
+                        } else if (categoryData === 'cardio') {
+                            showPage('cardio');
+                        } else if (categoryData === 'lowerlegs') {
+                            showPage('lowerlegs');
+                        } else if (categoryData === 'all') {
+                            alert('Раздел "Все" в разработке');
+                        }
+                    });
+                });
+            }, 50);
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки страницы упражнений:', error);
+    }
+}
+
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 document.addEventListener("DOMContentLoaded", () => {
     loadWorkouts();
@@ -297,7 +350,6 @@ function openEditModal(index) {
     nameInput.value = workout.name;
     daySelect.value = workout.day;
     
-    // Временная функция сохранения
     const saveHandler = function() {
         const newName = nameInput.value.trim();
         const newDay = daySelect.value;
@@ -313,7 +365,6 @@ function openEditModal(index) {
         }
     };
     
-    // Очистка обработчиков
     const cleanup = function() {
         confirmBtn.removeEventListener('click', saveHandler);
         cancelBtn.removeEventListener('click', cancelHandler);
@@ -515,48 +566,7 @@ function setupNavigation() {
         });
     }
     
-    const exerciseCategories = document.querySelectorAll('.exercise-category');
-    exerciseCategories.forEach(category => {
-        category.addEventListener('click', () => {
-            const categoryData = category.getAttribute('data-category');
-            
-            if (categoryData === 'triceps') {
-                showPage('triceps');
-            } else if (categoryData === 'chest') {
-                showPage('chest');
-            } else if (categoryData === 'shoulder') {
-                showPage('shoulder');
-            } else if (categoryData === 'biceps') {
-                showPage('biceps');
-            } else if (categoryData === 'abs') {
-                showPage('abs');
-            } else if (categoryData === 'back') {
-                showPage('back');
-            } else if (categoryData === 'forearms') {
-                showPage('forearms');
-            } else if (categoryData === 'upperlegs') {
-                showPage('upperlegs');
-            } else if (categoryData === 'glutes') {
-                showPage('glutes');
-            } else if (categoryData === 'cardio') {
-                showPage('cardio');
-            } else if (categoryData === 'lowerlegs') {
-                showPage('lowerlegs');
-            } else if (categoryData === 'all') {
-                alert('Раздел "Все" в разработке');
-            }
-        });
-    });
-    
-    const exerciseItems = document.querySelectorAll('.exercise-item');
-    exerciseItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const exerciseName = item.querySelector('.exercise-item-name')?.textContent || 'Упражнение';
-            const exerciseImg = item.querySelector('.exercise-image')?.src || '';
-            openExerciseDetail(exerciseName, exerciseImg);
-        });
-    });
-    
+    // Обработка кнопки "Назад" на телефоне (Android)
     document.addEventListener('backbutton', (e) => {
         if (currentPage === 'workout-detail') {
             e.preventDefault();
@@ -594,6 +604,7 @@ function setupBottomNav() {
     
     if (navExercises) {
         navExercises.addEventListener('click', () => {
+            loadExercisesGrid();
             showPage('exercises');
             updateActiveNav('nav-exercises');
         });
@@ -655,7 +666,10 @@ function showPage(pageName) {
         if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'block';
         currentPage = 'workout-detail';
     } else if (pageName === 'exercises') {
-        if (pageExercises) pageExercises.style.display = 'block';
+        if (pageExercises) {
+            loadExercisesGrid();
+            pageExercises.style.display = 'block';
+        }
         currentPage = 'exercises';
         updateActiveNav('nav-exercises');
     } else if (pageName === 'triceps') {
