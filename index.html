@@ -27,13 +27,6 @@
     <link rel="icon" type="image/png" sizes="256x256" href="assets/icon-desktop-256.png">
     <link rel="icon" type="image/png" sizes="384x384" href="assets/icon-desktop-384.png">
     <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-desktop-512.png">
-    
-    <!-- Apple Touch Icon для iOS -->
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-desktop-152.png">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Gym Training">
 </head>
 <body>
     <!-- ЭКРАН ЗАСТАВКИ -->
@@ -91,7 +84,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 3: ДЕТАЛИ ТРЕНИРОВКИ -->
+    <!-- СТРАНИЦА 3: ДЕТАЛИ ТРЕНИРОВКИ (СОЗДАНИЕ/РЕДАКТИРОВАНИЕ) -->
     <div id="page-workout-detail" class="page" style="display: none;">
         <div class="detail-container">
             <div class="detail-header">
@@ -100,23 +93,23 @@
                         <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
                     </svg>
                 </button>
-                <h2 id="workout-detail-date">8 апреля, 2026</h2>
-                <div class="detail-header-actions">
-                    <button id="add-exercise-to-workout-btn" class="add-workout-btn" title="Добавить упражнение">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div class="detail-header-info">
+                    <span class="detail-day-badge" id="detail-day-badge">Пн</span>
+                    <h2 id="detail-workout-name">Спина</h2>
+                </div>
+                <div class="detail-actions">
+                    <button id="add-exercise-to-workout-btn" class="detail-action-btn" title="Добавить упражнение">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
                         </svg>
                     </button>
-                    <button id="start-workout-btn" class="start-workout-btn" title="Начать тренировку">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 8.64L15.27 12L10 15.36V8.64zM8 5v14l11-7L8 5z" fill="white"/>
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="white"/>
-                        </svg>
+                    <button id="start-workout-btn" class="detail-action-btn" title="Начать тренировку" disabled>
+                        🚀
                     </button>
                 </div>
             </div>
             <div class="detail-content">
-                <div id="workout-exercises-list" class="workout-exercises-list">
+                <div id="workout-exercises-list" class="exercises-list">
                     <!-- Список выбранных упражнений будет здесь -->
                 </div>
                 <div id="empty-workout-exercises" class="empty-exercises">
@@ -130,12 +123,7 @@
     <!-- СТРАНИЦА 4: УПРАЖНЕНИЯ (загружается из pages/exercises-grid.html) -->
     <div id="page-exercises" class="page" style="display: none;"></div>
 
-    <!-- СТРАНИЦА 5: ВЫБОР УПРАЖНЕНИЙ ДЛЯ ТРЕНИРОВКИ -->
-    <div id="page-exercise-select" class="page" style="display: none;">
-        <!-- Содержимое загружается из pages/exercise-select.html -->
-    </div>
-
-    <!-- СТРАНИЦА 6: УПРАЖНЕНИЯ - ТРИЦЕПС -->
+    <!-- СТРАНИЦА 5: УПРАЖНЕНИЯ - ТРИЦЕПС -->
     <div id="page-triceps" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -170,7 +158,28 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 7: ДЕТАЛИ УПРАЖНЕНИЯ -->
+    <!-- СТРАНИЦА 5.1: ВЫБОР УПРАЖНЕНИЙ ДЛЯ ТРЕНИРОВКИ -->
+    <div id="page-select-exercise" class="page" style="display: none;">
+        <div class="exercises-detail-container">
+            <div class="exercises-detail-header">
+                <button id="back-to-workout-from-select" class="back-btn" title="Назад">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
+                    </svg>
+                </button>
+                <h2>Выберите упражнения</h2>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="exercises-detail-content">
+                <div id="select-exercises-list" class="exercises-detail-list">
+                    <!-- Список упражнений для выбора будет здесь -->
+                </div>
+                <button id="confirm-select-exercises-btn" class="confirm-select-btn" style="display: none;">Добавить выбранные</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА 6: ДЕТАЛИ УПРАЖНЕНИЯ (из библиотеки) -->
     <div id="page-exercise-detail" class="page" style="display: none;">
         <div class="exercise-detail-container">
             <div class="exercise-detail-header">
@@ -205,7 +214,42 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 8: ГРУДНЫЕ (заглушка) -->
+    <!-- СТРАНИЦА 6.1: ДЕТАЛИ УПРАЖНЕНИЯ ИЗ ТРЕНИРОВКИ -->
+    <div id="page-exercise-detail-from-workout" class="page" style="display: none;">
+        <div class="exercise-detail-container">
+            <div class="exercise-detail-header">
+                <button id="back-to-workout-from-exercise-detail" class="back-btn" title="Назад">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/>
+                    </svg>
+                </button>
+                <h2 id="exercise-detail-name-workout">Упражнение</h2>
+                <button id="save-exercise-to-workout-btn" class="save-exercise-btn">Сохранить</button>
+            </div>
+            <div class="exercise-detail-content">
+                <div class="exercise-detail-image">
+                    <img id="exercise-detail-img-workout" src="" alt="" onerror="this.src='assets/icon-desktop-192.png'">
+                </div>
+                <div class="exercise-sets-container">
+                    <div class="sets-header">
+                        <span class="sets-header-cell">Сет</span>
+                        <span class="sets-header-cell">Кг</span>
+                        <span class="sets-header-cell">Повторения</span>
+                        <span class="sets-header-cell">✓</span>
+                    </div>
+                    <div id="sets-list-workout" class="sets-list">
+                        <!-- Сеты будут добавлены через JavaScript -->
+                    </div>
+                    <div class="sets-buttons">
+                        <button id="add-set-btn-workout" class="add-set-btn">+ Добавить</button>
+                        <button id="remove-set-btn-workout" class="remove-set-btn">− Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА 7: ГРУДНЫЕ (заглушка) -->
     <div id="page-chest" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -238,7 +282,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 9: ПЛЕЧИ (заглушка) -->
+    <!-- СТРАНИЦА 8: ПЛЕЧИ (заглушка) -->
     <div id="page-shoulder" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -271,7 +315,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 10: БИЦЕПС (заглушка) -->
+    <!-- СТРАНИЦА 9: БИЦЕПС (заглушка) -->
     <div id="page-biceps" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -304,7 +348,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 11: ПРЕСС (заглушка) -->
+    <!-- СТРАНИЦА 10: ПРЕСС (заглушка) -->
     <div id="page-abs" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -337,7 +381,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 12: СПИНА (заглушка) -->
+    <!-- СТРАНИЦА 11: СПИНА (заглушка) -->
     <div id="page-back" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -370,7 +414,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 13: ПРЕДПЛЕЧЬЕ (заглушка) -->
+    <!-- СТРАНИЦА 12: ПРЕДПЛЕЧЬЕ (заглушка) -->
     <div id="page-forearms" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -403,7 +447,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 14: НОГИ (ВЕРХ) (заглушка) -->
+    <!-- СТРАНИЦА 13: НОГИ (ВЕРХ) (заглушка) -->
     <div id="page-upperlegs" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -436,7 +480,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 15: ЯГОДИЦЫ (заглушка) -->
+    <!-- СТРАНИЦА 14: ЯГОДИЦЫ (заглушка) -->
     <div id="page-glutes" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -469,7 +513,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 16: КАРДИО (заглушка) -->
+    <!-- СТРАНИЦА 15: КАРДИО (заглушка) -->
     <div id="page-cardio" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -502,7 +546,7 @@
         </div>
     </div>
 
-    <!-- СТРАНИЦА 17: НОГИ (НИЗ) (заглушка) -->
+    <!-- СТРАНИЦА 16: НОГИ (НИЗ) (заглушка) -->
     <div id="page-lowerlegs" class="page" style="display: none;">
         <div class="exercises-detail-container">
             <div class="exercises-detail-header">
@@ -642,5 +686,4 @@
     <script src="script.js"></script>
     <script src="js/exercise-card.js"></script>
 </body>
-</html
-    
+</html>
