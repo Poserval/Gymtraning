@@ -11,18 +11,19 @@ let workouts = [];
 let editingWorkoutIndex = null;
 let dragStartIndex = null;
 let currentWorkoutIndex = null;
+let currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
 
-// Переменные для тренировки на дату
+// Переменные для тренировки
 let currentWorkoutExercises = [];
-let tempSelectedExercises = [];
-let currentSelectCategory = 'triceps';
+let editingWorkoutExerciseIndex = null;
+let selectedExercisesForWorkout = [];
+let isSelectionMode = false;
 
 // Элементы страниц
 const pageCalendar = document.getElementById('page-calendar');
 const pageWorkout = document.getElementById('page-workout');
 const pageWorkoutDetail = document.getElementById('page-workout-detail');
 const pageExercises = document.getElementById('page-exercises');
-const pageExerciseSelect = document.getElementById('page-exercise-select');
 const pageTriceps = document.getElementById('page-triceps');
 const pageChest = document.getElementById('page-chest');
 const pageShoulder = document.getElementById('page-shoulder');
@@ -35,13 +36,14 @@ const pageGlutes = document.getElementById('page-glutes');
 const pageCardio = document.getElementById('page-cardio');
 const pageLowerlegs = document.getElementById('page-lowerlegs');
 const pageExerciseDetail = document.getElementById('page-exercise-detail');
+const pageSelectExercise = document.getElementById('page-select-exercise');
+const pageExerciseDetailFromWorkout = document.getElementById('page-exercise-detail-from-workout');
 
 // Флаг загрузки сетки упражнений
 let exercisesGridLoaded = false;
 let exercisesGridHtml = null;
-let exerciseSelectPageLoaded = false;
 
-// ==================== ЗАГРУЗКА СТРАНИЦ ====================
+// ==================== ЗАГРУЗКА СТРАНИЦЫ УПРАЖНЕНИЙ ====================
 async function loadExercisesGrid() {
     if (exercisesGridLoaded) return;
     try {
@@ -59,38 +61,11 @@ async function loadExercisesGrid() {
         }
     } catch (error) {
         console.error('Ошибка загрузки страницы упражнений:', error);
-        // Заглушка
         const container = document.getElementById('page-exercises');
         if (container) {
             container.innerHTML = '<div class="exercises-container"><div class="exercises-header"><button id="back-to-main-from-exercises" class="back-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/></svg></button><h2>Упражнения</h2><div style="width: 40px;"></div></div><div class="exercises-content"><div class="exercises-grid"><div class="exercise-category" data-category="triceps"><div class="category-icon"><img src="assets/icon-exercises-triceps.png" alt="Трицепс"></div><span class="category-name">Трицепс</span></div><div class="exercise-category" data-category="chest"><div class="category-icon"><img src="assets/icon-exercises-chest.png" alt="Грудные"></div><span class="category-name">Грудные</span></div><div class="exercise-category" data-category="shoulder"><div class="category-icon"><img src="assets/icon-exercises-shoulder.png" alt="Плечи"></div><span class="category-name">Плечи</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="biceps"><div class="category-icon"><img src="assets/icon-exercises-biceps.png" alt="Бицепс"></div><span class="category-name">Бицепс</span></div><div class="exercise-category" data-category="abs"><div class="category-icon"><img src="assets/icon-exercises-abs.png" alt="Пресс"></div><span class="category-name">Пресс</span></div><div class="exercise-category" data-category="back"><div class="category-icon"><img src="assets/icon-exercises-back.png" alt="Спина"></div><span class="category-name">Спина</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="forearms"><div class="category-icon"><img src="assets/icon-exercises-forearms.png" alt="Предплечье"></div><span class="category-name">Предплечье</span></div><div class="exercise-category" data-category="upperlegs"><div class="category-icon"><img src="assets/icon-exercises-upperlegs.png" alt="Ноги (верх)"></div><span class="category-name">Ноги (верх)</span></div><div class="exercise-category" data-category="glutes"><div class="category-icon"><img src="assets/icon-exercises-glutes.png" alt="Ягодицы"></div><span class="category-name">Ягодицы</span></div></div><div class="exercises-grid"><div class="exercise-category" data-category="cardio"><div class="category-icon"><img src="assets/icon-exercises-cardio.png" alt="Кардио"></div><span class="category-name">Кардио</span></div><div class="exercise-category" data-category="lowerlegs"><div class="category-icon"><img src="assets/icon-exercises-lowerlegs.png" alt="Ноги (низ)"></div><span class="category-name">Ноги (низ)</span></div><div class="exercise-category" data-category="all"><div class="category-icon"><img src="assets/icon-exercises-all.png" alt="Все"></div><span class="category-name">Все</span></div></div></div></div>';
             exercisesGridLoaded = true;
             attachExerciseCategoryHandlers();
-        }
-    }
-}
-
-async function loadExerciseSelectPage() {
-    if (exerciseSelectPageLoaded) return;
-    try {
-        let response = await fetch('pages/exercise-select.html');
-        if (!response.ok) {
-            response = await fetch('./pages/exercise-select.html');
-        }
-        const html = await response.text();
-        const container = document.getElementById('page-exercise-select');
-        if (container) {
-            container.innerHTML = html;
-            exerciseSelectPageLoaded = true;
-            attachSelectPageHandlers();
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки страницы выбора упражнений:', error);
-        // Создаем заглушку
-        const container = document.getElementById('page-exercise-select');
-        if (container) {
-            container.innerHTML = '<div class="exercises-detail-container"><div class="exercises-detail-header"><button id="back-to-workout-from-select" class="back-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="white"/></svg></button><h2 id="select-category-title">Трицепс</h2><div style="width: 40px;"></div></div><div class="exercises-detail-content"><div id="select-exercises-list" class="exercises-detail-list"></div><div id="empty-select-exercises" class="empty-exercises-detail" style="display: none;"><p>Нет упражнений в этой группе</p></div></div><div class="select-footer" id="select-footer" style="display: none;"><button id="confirm-add-exercises-btn" class="confirm-add-btn">Добавить выбранные</button></div></div>';
-            exerciseSelectPageLoaded = true;
-            attachSelectPageHandlers();
         }
     }
 }
@@ -105,27 +80,27 @@ function attachExerciseCategoryHandlers() {
                 e.stopPropagation();
                 const categoryData = newCategory.getAttribute('data-category');
                 if (categoryData === 'triceps') {
-                    openExerciseSelectPage('triceps');
+                    showPage('triceps');
                 } else if (categoryData === 'chest') {
-                    openExerciseSelectPage('chest');
+                    showPage('chest');
                 } else if (categoryData === 'shoulder') {
-                    openExerciseSelectPage('shoulder');
+                    showPage('shoulder');
                 } else if (categoryData === 'biceps') {
-                    openExerciseSelectPage('biceps');
+                    showPage('biceps');
                 } else if (categoryData === 'abs') {
-                    openExerciseSelectPage('abs');
+                    showPage('abs');
                 } else if (categoryData === 'back') {
-                    openExerciseSelectPage('back');
+                    showPage('back');
                 } else if (categoryData === 'forearms') {
-                    openExerciseSelectPage('forearms');
+                    showPage('forearms');
                 } else if (categoryData === 'upperlegs') {
-                    openExerciseSelectPage('upperlegs');
+                    showPage('upperlegs');
                 } else if (categoryData === 'glutes') {
-                    openExerciseSelectPage('glutes');
+                    showPage('glutes');
                 } else if (categoryData === 'cardio') {
-                    openExerciseSelectPage('cardio');
+                    showPage('cardio');
                 } else if (categoryData === 'lowerlegs') {
-                    openExerciseSelectPage('lowerlegs');
+                    showPage('lowerlegs');
                 } else if (categoryData === 'all') {
                     alert('Раздел "Все" в разработке');
                 }
@@ -143,157 +118,32 @@ function attachExerciseCategoryHandlers() {
     }, 50);
 }
 
-function attachSelectPageHandlers() {
-    setTimeout(() => {
-        const backBtn = document.getElementById('back-to-workout-from-select');
-        if (backBtn) {
-            const newBackBtn = backBtn.cloneNode(true);
-            backBtn.parentNode.replaceChild(newBackBtn, backBtn);
-            newBackBtn.addEventListener('click', () => {
-                showPage('workout-detail');
-            });
-        }
-        
-        const confirmBtn = document.getElementById('confirm-add-exercises-btn');
-        if (confirmBtn) {
-            const newConfirmBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-            newConfirmBtn.addEventListener('click', () => {
-                tempSelectedExercises.forEach(ex => {
-                    if (!currentWorkoutExercises.some(e => e.id === ex.id)) {
-                        currentWorkoutExercises.push(ex);
-                    }
-                });
-                saveCurrentWorkout();
-                renderWorkoutExercisesList();
-                showPage('workout-detail');
-            });
-        }
-    }, 50);
+// ==================== ФУНКЦИИ ДЛЯ ТРЕНИРОВКИ ====================
+
+function openSelectExercisesPage() {
+    isSelectionMode = true;
+    selectedExercisesForWorkout = [];
+    loadSelectExercisesList();
+    showPage('select-exercise');
 }
 
-// ==================== РАБОТА С ТРЕНИРОВКОЙ НА ДАТУ ====================
-function openWorkoutDetailForDate(date) {
-    selectedDate = date;
-    const dateTitle = document.getElementById('workout-detail-date');
-    if (dateTitle) {
-        const dateObj = new Date(date);
-        const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-        dateTitle.textContent = `${dateObj.getDate()} ${monthNames[dateObj.getMonth()]}, ${dateObj.getFullYear()}`;
-    }
-    
-    const savedWorkout = localStorage.getItem(`workout_${date}`);
-    if (savedWorkout) {
-        currentWorkoutExercises = JSON.parse(savedWorkout);
-    } else {
-        currentWorkoutExercises = [];
-    }
-    renderWorkoutExercisesList();
-    showPage('workout-detail');
-}
-
-function renderWorkoutExercisesList() {
-    const container = document.getElementById('workout-exercises-list');
-    const emptyMessage = document.getElementById('empty-workout-exercises');
-    
-    if (!container || !emptyMessage) return;
-    
-    if (currentWorkoutExercises.length === 0) {
-        container.style.display = 'none';
-        emptyMessage.style.display = 'block';
-        return;
-    }
-    
-    container.style.display = 'flex';
-    emptyMessage.style.display = 'none';
-    
-    container.innerHTML = currentWorkoutExercises.map((ex, index) => `
-        <div class="workout-exercise-item" data-index="${index}" data-exercise-id="${ex.id}">
-            <span class="workout-exercise-name">${escapeHtml(ex.name)}</span>
-            <span class="workout-exercise-arrow">›</span>
-        </div>
-    `).join('');
-    
-    document.querySelectorAll('.workout-exercise-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const index = parseInt(item.dataset.index);
-            const exercise = currentWorkoutExercises[index];
-            if (exercise) {
-                openExerciseDetail(exercise.name, exercise.image);
-                window.editingWorkoutExerciseIndex = index;
-            }
-        });
-    });
-}
-
-function saveCurrentWorkout() {
-    if (selectedDate) {
-        localStorage.setItem(`workout_${selectedDate}`, JSON.stringify(currentWorkoutExercises));
-    }
-}
-
-function openExerciseSelectPage(category) {
-    currentSelectCategory = category;
-    const title = document.getElementById('select-category-title');
-    const categoryNames = {
-        'triceps': 'Трицепс',
-        'chest': 'Грудные',
-        'shoulder': 'Плечи',
-        'biceps': 'Бицепс',
-        'abs': 'Пресс',
-        'back': 'Спина',
-        'forearms': 'Предплечье',
-        'upperlegs': 'Ноги (верх)',
-        'glutes': 'Ягодицы',
-        'cardio': 'Кардио',
-        'lowerlegs': 'Ноги (низ)'
-    };
-    if (title) title.textContent = categoryNames[category] || category;
-    
-    let exercises = [];
-    
-    if (category === 'triceps') {
-        const saved = localStorage.getItem('triceps_exercises');
-        if (saved) {
-            exercises = JSON.parse(saved);
-        } else {
-            exercises = [{
-                id: 'triceps_001',
-                name: 'Жим от брусьев',
-                image: 'assets/exercises/triceps/images/icon-triceps-001.png',
-                isDefault: true
-            }];
-        }
-    } else {
-        const saved = localStorage.getItem(`${category}_exercises`);
-        if (saved) {
-            exercises = JSON.parse(saved);
-        }
-    }
-    
-    tempSelectedExercises = [];
-    renderSelectExercisesList(exercises);
-    loadExerciseSelectPage().then(() => {
-        showPage('exercise-select');
-    });
-}
-
-function renderSelectExercisesList(exercises) {
+function loadSelectExercisesList() {
     const container = document.getElementById('select-exercises-list');
-    const emptyMessage = document.getElementById('empty-select-exercises');
-    const footer = document.getElementById('select-footer');
-    
     if (!container) return;
     
-    if (exercises.length === 0) {
-        container.style.display = 'none';
-        if (emptyMessage) emptyMessage.style.display = 'block';
-        if (footer) footer.style.display = 'none';
-        return;
+    const saved = localStorage.getItem('triceps_exercises');
+    let exercises = [];
+    if (saved) {
+        exercises = JSON.parse(saved);
+    } else {
+        exercises = [{
+            id: 'triceps_001',
+            name: 'Жим от брусьев',
+            image: 'assets/exercises/triceps/images/icon-triceps-001.png',
+            isDefault: true,
+            isFavorite: false
+        }];
     }
-    
-    container.style.display = 'flex';
-    if (emptyMessage) emptyMessage.style.display = 'none';
     
     container.innerHTML = exercises.map((ex, index) => `
         <div class="exercise-item selectable" data-exercise-id="${ex.id}" data-exercise-name="${ex.name}" data-exercise-img="${ex.image}" data-index="${index}">
@@ -309,25 +159,234 @@ function renderSelectExercisesList(exercises) {
         </div>
     `).join('');
     
-    if (footer) footer.style.display = 'block';
-    
-    document.querySelectorAll('.selectable').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.stopPropagation();
+    document.querySelectorAll('#select-exercises-list .selectable').forEach(item => {
+        item.addEventListener('click', () => {
+            item.classList.toggle('selected');
             const exerciseId = item.dataset.exerciseId;
             const exerciseName = item.dataset.exerciseName;
             const exerciseImg = item.dataset.exerciseImg;
-            const isSelected = tempSelectedExercises.some(ex => ex.id === exerciseId);
             
-            if (isSelected) {
-                tempSelectedExercises = tempSelectedExercises.filter(ex => ex.id !== exerciseId);
-                item.classList.remove('selected');
+            if (item.classList.contains('selected')) {
+                if (!selectedExercisesForWorkout.find(e => e.id === exerciseId)) {
+                    selectedExercisesForWorkout.push({
+                        id: exerciseId,
+                        name: exerciseName,
+                        image: exerciseImg
+                    });
+                }
             } else {
-                tempSelectedExercises.push({ id: exerciseId, name: exerciseName, image: exerciseImg });
-                item.classList.add('selected');
+                selectedExercisesForWorkout = selectedExercisesForWorkout.filter(e => e.id !== exerciseId);
+            }
+            
+            const confirmBtn = document.getElementById('confirm-select-exercises-btn');
+            if (confirmBtn) {
+                confirmBtn.style.display = selectedExercisesForWorkout.length > 0 ? 'block' : 'none';
             }
         });
     });
+    
+    const confirmBtn = document.getElementById('confirm-select-exercises-btn');
+    if (confirmBtn) {
+        confirmBtn.style.display = 'none';
+    }
+}
+
+function addSelectedExercisesToWorkout() {
+    selectedExercisesForWorkout.forEach(ex => {
+        if (!currentWorkoutExercises.find(e => e.id === ex.id)) {
+            currentWorkoutExercises.push({
+                id: ex.id,
+                name: ex.name,
+                image: ex.image,
+                sets: [{ set: 1, kg: 0, reps: 0, completed: false }]
+            });
+        }
+    });
+    renderWorkoutExercisesList();
+    showPage('workout-detail');
+    
+    const startBtn = document.getElementById('start-workout-btn');
+    if (startBtn && currentWorkoutExercises.length > 0) {
+        startBtn.disabled = false;
+    }
+}
+
+function renderWorkoutExercisesList() {
+    const container = document.getElementById('workout-exercises-list');
+    const emptyPlaceholder = document.getElementById('empty-workout-exercises');
+    
+    if (!container) return;
+    
+    if (currentWorkoutExercises.length === 0) {
+        container.style.display = 'none';
+        if (emptyPlaceholder) emptyPlaceholder.style.display = 'block';
+        return;
+    }
+    
+    container.style.display = 'flex';
+    if (emptyPlaceholder) emptyPlaceholder.style.display = 'none';
+    
+    container.innerHTML = currentWorkoutExercises.map((ex, index) => `
+        <div class="exercise-item" data-exercise-index="${index}">
+            <div class="exercise-item-left">
+                <img src="${ex.image}" alt="${ex.name}" class="exercise-image" onerror="this.src='assets/icon-desktop-96.png'">
+            </div>
+            <div class="exercise-item-center">
+                <span class="exercise-item-name">${escapeHtml(ex.name)}</span>
+            </div>
+            <div class="exercise-item-right">
+                <button class="edit-exercise-in-workout-btn" data-index="${index}">✏️</button>
+            </div>
+        </div>
+    `).join('');
+    
+    document.querySelectorAll('.edit-exercise-in-workout-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.index);
+            openExerciseDetailForWorkout(index);
+        });
+    });
+}
+
+function openExerciseDetailForWorkout(index) {
+    const exercise = currentWorkoutExercises[index];
+    if (!exercise) return;
+    
+    const detailName = document.getElementById('exercise-detail-name-workout');
+    const detailImg = document.getElementById('exercise-detail-img-workout');
+    
+    if (detailName) detailName.textContent = exercise.name;
+    if (detailImg) detailImg.src = exercise.image;
+    
+    currentSets = exercise.sets || [{ set: 1, kg: 0, reps: 0, completed: false }];
+    renderSetsForWorkout();
+    
+    editingWorkoutExerciseIndex = index;
+    
+    showPage('exercise-detail-from-workout');
+}
+
+function renderSetsForWorkout() {
+    const setsList = document.getElementById('sets-list-workout');
+    if (!setsList) return;
+    
+    setsList.innerHTML = currentSets.map((set, index) => `
+        <div class="set-row" data-index="${index}">
+            <div class="set-number">${set.set}</div>
+            <input type="number" class="set-input set-kg" value="${set.kg === 0 ? '' : set.kg}" placeholder="0" step="0.5">
+            <input type="number" class="set-input set-reps" value="${set.reps === 0 ? '' : set.reps}" placeholder="0" step="1">
+            <div class="set-checkbox">
+                <input type="checkbox" class="set-completed" ${set.completed ? 'checked' : ''} ${(set.kg === 0 || set.reps === 0) ? 'disabled' : ''}>
+            </div>
+        </div>
+    `).join('');
+    
+    document.querySelectorAll('#sets-list-workout .set-row').forEach((row, idx) => {
+        const kgInput = row.querySelector('.set-kg');
+        const repsInput = row.querySelector('.set-reps');
+        const completedCheckbox = row.querySelector('.set-completed');
+        
+        if (kgInput) {
+            kgInput.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (value.startsWith('0') && value.length > 1) {
+                    value = value.replace(/^0+/, '');
+                    e.target.value = value;
+                }
+                currentSets[idx].kg = parseFloat(value) || 0;
+                
+                if (completedCheckbox) {
+                    const kgValid = currentSets[idx].kg > 0;
+                    const repsValid = currentSets[idx].reps > 0;
+                    completedCheckbox.disabled = !(kgValid && repsValid);
+                    if (completedCheckbox.disabled) {
+                        completedCheckbox.checked = false;
+                        currentSets[idx].completed = false;
+                    }
+                }
+            });
+        }
+        
+        if (repsInput) {
+            repsInput.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (value.startsWith('0') && value.length > 1) {
+                    value = value.replace(/^0+/, '');
+                    e.target.value = value;
+                }
+                currentSets[idx].reps = parseInt(value) || 0;
+                
+                if (completedCheckbox) {
+                    const kgValid = currentSets[idx].kg > 0;
+                    const repsValid = currentSets[idx].reps > 0;
+                    completedCheckbox.disabled = !(kgValid && repsValid);
+                    if (completedCheckbox.disabled) {
+                        completedCheckbox.checked = false;
+                        currentSets[idx].completed = false;
+                    }
+                }
+            });
+        }
+        
+        if (completedCheckbox) {
+            completedCheckbox.addEventListener('change', (e) => {
+                if (!completedCheckbox.disabled) {
+                    currentSets[idx].completed = e.target.checked;
+                } else {
+                    e.target.checked = false;
+                    alert('Заполните вес и количество повторений');
+                }
+            });
+        }
+    });
+}
+
+function saveWorkoutExerciseSets() {
+    if (editingWorkoutExerciseIndex !== null) {
+        currentWorkoutExercises[editingWorkoutExerciseIndex].sets = JSON.parse(JSON.stringify(currentSets));
+        renderWorkoutExercisesList();
+        editingWorkoutExerciseIndex = null;
+    }
+    showPage('workout-detail');
+}
+
+function setupWorkoutExerciseDetailButtons() {
+    const addSetBtn = document.getElementById('add-set-btn-workout');
+    const removeSetBtn = document.getElementById('remove-set-btn-workout');
+    const saveBtn = document.getElementById('save-exercise-to-workout-btn');
+    const backBtn = document.getElementById('back-to-workout-from-exercise-detail');
+    
+    if (addSetBtn) {
+        addSetBtn.addEventListener('click', () => {
+            const newSetNumber = currentSets.length + 1;
+            currentSets.push({ set: newSetNumber, kg: 0, reps: 0, completed: false });
+            renderSetsForWorkout();
+        });
+    }
+    
+    if (removeSetBtn) {
+        removeSetBtn.addEventListener('click', () => {
+            if (currentSets.length > 1) {
+                currentSets.pop();
+                renderSetsForWorkout();
+            } else {
+                alert('Нельзя удалить последний сет');
+            }
+        });
+    }
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            saveWorkoutExerciseSets();
+        });
+    }
+    
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            showPage('workout-detail');
+        });
+    }
 }
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
@@ -339,10 +398,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setupBottomNav();
     setupModal();
     setupWorkoutMenu();
-    loadExerciseSelectPage();
+    setupWorkoutExerciseDetailButtons();
 });
 
-// ==================== РАБОТА С ТРЕНИРОВКАМИ (список) ====================
+// ==================== РАБОТА С ТРЕНИРОВКАМИ ====================
 
 function loadWorkouts() {
     const savedWorkouts = localStorage.getItem('gym_workouts_list');
@@ -719,15 +778,28 @@ function setupNavigation() {
     const addExerciseToWorkoutBtn = document.getElementById('add-exercise-to-workout-btn');
     if (addExerciseToWorkoutBtn) {
         addExerciseToWorkoutBtn.addEventListener('click', () => {
-            loadExercisesGrid();
-            showPage('exercises');
+            openSelectExercisesPage();
         });
     }
     
-    const startWorkoutBtn = document.getElementById('start-workout-btn');
-    if (startWorkoutBtn) {
-        startWorkoutBtn.addEventListener('click', () => {
-            alert('Режим тренировки в разработке');
+    const backToWorkoutFromSelect = document.getElementById('back-to-workout-from-select');
+    if (backToWorkoutFromSelect) {
+        backToWorkoutFromSelect.addEventListener('click', () => {
+            showPage('workout-detail');
+        });
+    }
+    
+    const confirmSelectExercisesBtn = document.getElementById('confirm-select-exercises-btn');
+    if (confirmSelectExercisesBtn) {
+        confirmSelectExercisesBtn.addEventListener('click', () => {
+            addSelectedExercisesToWorkout();
+        });
+    }
+    
+    const backToMainFromExercises = document.getElementById('back-to-main-from-exercises');
+    if (backToMainFromExercises) {
+        backToMainFromExercises.addEventListener('click', () => {
+            showPage('calendar');
         });
     }
     
@@ -825,15 +897,18 @@ function setupNavigation() {
         } else if (currentPage === 'exercises') {
             e.preventDefault();
             showPage('calendar');
-        } else if (currentPage === 'exercise-select') {
-            e.preventDefault();
-            showPage('workout-detail');
         } else if (currentPage === 'triceps') {
             e.preventDefault();
             showPage('exercises');
         } else if (currentPage === 'exercise-detail') {
             e.preventDefault();
             showPage('triceps');
+        } else if (currentPage === 'select-exercise') {
+            e.preventDefault();
+            showPage('workout-detail');
+        } else if (currentPage === 'exercise-detail-from-workout') {
+            e.preventDefault();
+            showPage('workout-detail');
         } else if (currentPage !== 'calendar') {
             e.preventDefault();
             showPage('exercises');
@@ -891,7 +966,6 @@ function showPage(pageName) {
     if (pageWorkout) pageWorkout.style.display = 'none';
     if (pageWorkoutDetail) pageWorkoutDetail.style.display = 'none';
     if (pageExercises) pageExercises.style.display = 'none';
-    if (pageExerciseSelect) pageExerciseSelect.style.display = 'none';
     if (pageTriceps) pageTriceps.style.display = 'none';
     if (pageChest) pageChest.style.display = 'none';
     if (pageShoulder) pageShoulder.style.display = 'none';
@@ -904,6 +978,8 @@ function showPage(pageName) {
     if (pageCardio) pageCardio.style.display = 'none';
     if (pageLowerlegs) pageLowerlegs.style.display = 'none';
     if (pageExerciseDetail) pageExerciseDetail.style.display = 'none';
+    if (pageSelectExercise) pageSelectExercise.style.display = 'none';
+    if (pageExerciseDetailFromWorkout) pageExerciseDetailFromWorkout.style.display = 'none';
     
     if (pageName === 'calendar') {
         if (pageCalendar) pageCalendar.style.display = 'block';
@@ -923,11 +999,6 @@ function showPage(pageName) {
         }
         currentPage = 'exercises';
         updateActiveNav('nav-exercises');
-    } else if (pageName === 'exercise-select') {
-        if (pageExerciseSelect) {
-            pageExerciseSelect.style.display = 'block';
-        }
-        currentPage = 'exercise-select';
     } else if (pageName === 'triceps') {
         if (pageTriceps) pageTriceps.style.display = 'block';
         currentPage = 'triceps';
@@ -975,12 +1046,18 @@ function showPage(pageName) {
     } else if (pageName === 'exercise-detail') {
         if (pageExerciseDetail) pageExerciseDetail.style.display = 'block';
         currentPage = 'exercise-detail';
+    } else if (pageName === 'select-exercise') {
+        if (pageSelectExercise) pageSelectExercise.style.display = 'block';
+        currentPage = 'select-exercise';
+    } else if (pageName === 'exercise-detail-from-workout') {
+        if (pageExerciseDetailFromWorkout) pageExerciseDetailFromWorkout.style.display = 'block';
+        currentPage = 'exercise-detail-from-workout';
     }
 }
 
 function openWorkoutPage(date) {
     selectedDate = date;
-    openWorkoutDetailForDate(date);
+    showPage('workout');
 }
 
 function openExerciseDetail(name, imgSrc) {
@@ -990,12 +1067,109 @@ function openExerciseDetail(name, imgSrc) {
     if (detailName) detailName.textContent = name;
     if (detailImg) detailImg.src = imgSrc;
     
-    if (typeof currentSets !== 'undefined') {
-        currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
-        if (typeof renderSets === 'function') renderSets();
-    }
+    currentSets = [{ set: 1, kg: 0, reps: 0, completed: false }];
+    renderSets();
     
     showPage('exercise-detail');
+}
+
+function renderSets() {
+    const setsList = document.getElementById('sets-list');
+    if (!setsList) return;
+    
+    setsList.innerHTML = currentSets.map((set, index) => `
+        <div class="set-row" data-index="${index}">
+            <div class="set-number">${set.set}</div>
+            <input type="number" class="set-input set-kg" value="${set.kg === 0 ? '' : set.kg}" placeholder="0" step="0.5">
+            <input type="number" class="set-input set-reps" value="${set.reps === 0 ? '' : set.reps}" placeholder="0" step="1">
+            <div class="set-checkbox">
+                <input type="checkbox" class="set-completed" ${set.completed ? 'checked' : ''} ${(set.kg === 0 || set.reps === 0) ? 'disabled' : ''}>
+            </div>
+        </div>
+    `).join('');
+    
+    document.querySelectorAll('#sets-list .set-row').forEach((row, idx) => {
+        const kgInput = row.querySelector('.set-kg');
+        const repsInput = row.querySelector('.set-reps');
+        const completedCheckbox = row.querySelector('.set-completed');
+        
+        if (kgInput) {
+            kgInput.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (value.startsWith('0') && value.length > 1) {
+                    value = value.replace(/^0+/, '');
+                    e.target.value = value;
+                }
+                currentSets[idx].kg = parseFloat(value) || 0;
+                
+                if (completedCheckbox) {
+                    const kgValid = currentSets[idx].kg > 0;
+                    const repsValid = currentSets[idx].reps > 0;
+                    completedCheckbox.disabled = !(kgValid && repsValid);
+                    if (completedCheckbox.disabled) {
+                        completedCheckbox.checked = false;
+                        currentSets[idx].completed = false;
+                    }
+                }
+            });
+        }
+        
+        if (repsInput) {
+            repsInput.addEventListener('input', (e) => {
+                let value = e.target.value;
+                if (value.startsWith('0') && value.length > 1) {
+                    value = value.replace(/^0+/, '');
+                    e.target.value = value;
+                }
+                currentSets[idx].reps = parseInt(value) || 0;
+                
+                if (completedCheckbox) {
+                    const kgValid = currentSets[idx].kg > 0;
+                    const repsValid = currentSets[idx].reps > 0;
+                    completedCheckbox.disabled = !(kgValid && repsValid);
+                    if (completedCheckbox.disabled) {
+                        completedCheckbox.checked = false;
+                        currentSets[idx].completed = false;
+                    }
+                }
+            });
+        }
+        
+        if (completedCheckbox) {
+            completedCheckbox.addEventListener('change', (e) => {
+                if (!completedCheckbox.disabled) {
+                    currentSets[idx].completed = e.target.checked;
+                } else {
+                    e.target.checked = false;
+                    alert('Заполните вес и количество повторений');
+                }
+            });
+        }
+    });
+}
+
+function setupExerciseDetail() {
+    const addSetBtn = document.getElementById('add-set-btn');
+    const removeSetBtn = document.getElementById('remove-set-btn');
+    
+    if (addSetBtn) {
+        addSetBtn.addEventListener('click', () => {
+            const newSetNumber = currentSets.length + 1;
+            currentSets.push({ set: newSetNumber, kg: 0, reps: 0, completed: false });
+            renderSets();
+        });
+    }
+    
+    if (removeSetBtn) {
+        removeSetBtn.addEventListener('click', () => {
+            if (currentSets.length > 1) {
+                currentSets.pop();
+                renderSets();
+            } else {
+                alert('Нельзя удалить последний сет');
+            }
+        });
+    }
 }
 
 // ==================== МОДАЛЬНОЕ ОКНО ====================
